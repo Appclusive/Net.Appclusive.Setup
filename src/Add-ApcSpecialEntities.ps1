@@ -35,7 +35,7 @@ if(!(Test-Path($AppConfig) -PathType Leaf))
 	Exit;
 }
 
-[xml] $xmlConfig = Get-Content -Raw $WebConfig;
+[xml] $xmlConfig = Get-Content -Raw $AppConfig;
 $connectionStringEntry = $xmlConfig.Configuration.ConnectionStrings.Add |? name -eq $ConnectionStringKey;
 $connectionString = $connectionStringEntry.connectionString;
 
