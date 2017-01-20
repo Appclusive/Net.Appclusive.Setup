@@ -50,28 +50,25 @@ switch($ConnectionType)
 			Exit;
 		}
 
-		$Database = $Matches[1];
+		$database = $Matches[1];
 
-		$DataDirectoryPath = Join-Path -Path (Get-Item $WebConfig).Directory -ChildPath $DataDirectory;
-		if(!(Test-Path($DataDirectoryPath) -PathType Container))
+		if(!(Test-Path($DataDirectory) -PathType Container))
 		{
-			Write-Error "DataDirectoryPath '$DataDirectoryPath' not found. Aborting ...";
+			Write-Error "DataDirectory '$DataDirectory' not found. Aborting ...";
 			Exit;
 		}
-
-		$connectionString = $connectionString.Replace('|DataDirectory|', $DataDirectoryPath + "\");
 	}
 	'SQLServer'
 	{
 		$hasDatabaseProperty = $connectionString -match 'Database=([^;]+);';
 		if($hasDatabaseProperty)
 		{
-			$Database = $Matches[1];
+			$database = $Matches[1];
 		}
 		$hasInitialCatalogProperty = $connectionString -match 'Initial.Catalog=([^;]+);';
 		if($hasInitialCatalogProperty)
 		{
-			$Database = $Matches[1];
+			$database = $Matches[1];
 		}
 		if(!$hasDatabaseProperty -and !$hasInitialCatalogProperty)
 		{
@@ -202,11 +199,11 @@ try
 }
 catch
 {
-	Write-Warning "Connection to database '$Database' FAILED.`r`n$_";
+	Write-Warning "Connection to database '$database' FAILED.`r`n$_";
 	Exit;
 }
 
-Write-Host ("START inserting special entities on database '$Database' and connectionString '$connectionString' ...");
+Write-Host ("START inserting special entities on database '$database' and connectionString '$connectionString' ...");
 
 # Insertion of SYSTEM/root tenant
 $Error.Clear();
