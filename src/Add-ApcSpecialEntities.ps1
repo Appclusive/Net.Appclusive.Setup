@@ -14,7 +14,7 @@ PARAM
 	[String] $ConnectionType
 	,
 	[Parameter(Mandatory = $false)]
-	[String] $AppConfig = 'C:\GitRepos\biz.dfch.CS.ProductEngine\src\Net.Appclusive.Core\app.config'
+	[String] $AppConfig = 'C:\src\Net.Appclusive\src\Net.Appclusive.Core\app.config'
 	,
 	[Parameter(Mandatory = $false)]
 	[String] $DataDirectory = 'C:\src\App_Data'
