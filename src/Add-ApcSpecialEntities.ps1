@@ -220,9 +220,9 @@ $sqlCmdTextRootModelInsert = @"
                 ,
                 CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
                 ,
-                'System root model'
+                'Net.Appclusive.Public.Engine.BaseModel'
                 ,
-                'This is System root model'
+                'BaseModel'
                 ,
                 1
                 ,
