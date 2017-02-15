@@ -192,6 +192,100 @@ $sqlCmdTextTenantInsert = @"
             )
 "@
 
+$sqlCmdTextRootModelInsert = @"
+    SET IDENTITY_INSERT {0}[{1}].[Model] ON;
+    INSERT INTO {0}[{1}].[Model]
+            (
+				[Id]
+				,
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+				,
+				[ParentId]
+            )
+        VALUES
+            (
+                1
+                ,
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                'SYSTEM root item'
+                ,
+                'This is the SYSTEM tenant root item'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+				,
+				1
+            )
+    SET IDENTITY_INSERT {0}[{1}].[User] OFF;
+"@
+
+$sqlCmdTextRootItemInsert = @"
+    SET IDENTITY_INSERT {0}[{1}].[Item] ON;
+    INSERT INTO {0}[{1}].[Item]
+            (
+				[Id]
+				,
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+				,
+				[ParentId]
+				,
+				[ModelId]
+            )
+        VALUES
+            (
+                1
+                ,
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                'SYSTEM root model'
+                ,
+                'This is the SYSTEM tenant root model'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+				,
+				1
+				,
+				1
+            )
+    SET IDENTITY_INSERT {0}[{1}].[User] OFF;
+"@
+
 # Execution of SQL scripts with biz.dfch.PS.System.Data
 
 # Test DB connection
@@ -252,6 +346,55 @@ catch
 	Write-Warning ($Error | Out-String);
 	Exit;
 }
+
+# Insertion of root model
+$Error.Clear();
+try {
+	Write-Host "START Inserting root model [sqlCmdTextRootModelInsert] ...";
+	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Model] WHERE Id = 1" -As Default;
+	if($result.Count -lt 1)
+	{
+		$query = $sqlCmdTextRootModelInsert -f "[$database].", $Schema;
+		Write-Verbose $query;
+		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
+		Write-Host -ForegroundColor Green "Inserting root model SUCCEEDED.";
+	}
+	else
+	{
+		Write-Warning "Root model already exists. Skipping ...";
+	}
+}
+catch
+{
+	Write-Warning "Inserting root model FAILED";
+	Write-Warning ($Error | Out-String);
+	Exit;
+}
+
+# Insertion of root item
+$Error.Clear();
+try {
+	Write-Host "START Inserting root item [sqlCmdTextRootItemInsert] ...";
+	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Item] WHERE Id = 1" -As Default;
+	if($result.Count -lt 1)
+	{
+		$query = $sqlCmdTextRootItemInsert -f "[$database].", $Schema;
+		Write-Verbose $query;
+		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
+		Write-Host -ForegroundColor Green "Inserting root item SUCCEEDED.";
+	}
+	else
+	{
+		Write-Warning "Root item already exists. Skipping ...";
+	}
+}
+catch
+{
+	Write-Warning "Inserting root item FAILED";
+	Write-Warning ($Error | Out-String);
+	Exit;
+}
+
 
 #
 # Copyright 2017 d-fens GmbH
