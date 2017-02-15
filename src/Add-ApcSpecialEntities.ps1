@@ -193,6 +193,8 @@ $sqlCmdTextTenantInsert = @"
 "@
 
 # Execution of SQL scripts with biz.dfch.PS.System.Data
+
+# Test DB connection
 try
 {
 	Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT @@VERSION AS [Version]" -As Table;
@@ -202,8 +204,6 @@ catch
 	Write-Warning "Connection to database '$database' FAILED.`r`n$_";
 	Exit;
 }
-
-Write-Host ("START inserting special entities on database '$database' and connectionString '$connectionString' ...");
 
 # Insertion of SYSTEM/root tenant
 $Error.Clear();
@@ -243,7 +243,7 @@ try {
 	}
 	else
 	{
-		Write-Warning "Root User already exists. Skipping ...";
+		Write-Warning "Root user already exists. Skipping ...";
 	}
 }
 catch
