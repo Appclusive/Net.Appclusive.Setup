@@ -220,9 +220,9 @@ $sqlCmdTextRootModelInsert = @"
                 ,
                 CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
                 ,
-                'SYSTEM root item'
+                'System root model'
                 ,
-                'This is the SYSTEM tenant root item'
+                'This is System root model'
                 ,
                 1
                 ,
@@ -267,9 +267,9 @@ $sqlCmdTextRootItemInsert = @"
                 ,
                 CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
                 ,
-                'SYSTEM root model'
+                'System root item'
                 ,
-                'This is the SYSTEM tenant root model'
+                'This is the System root item'
                 ,
                 1
                 ,
