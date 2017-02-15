@@ -286,6 +286,55 @@ $sqlCmdTextRootItemInsert = @"
     SET IDENTITY_INSERT {0}[{1}].[User] OFF;
 "@
 
+$sqlCmdTextRootModelAttributeInsert = @"
+    SET IDENTITY_INSERT {0}[{1}].[ModelAttribute] ON;
+    INSERT INTO {0}[{1}].[ModelAttribute]
+            (
+				[Id]
+				,
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+				,
+				[ParentId]
+				,
+				[Type]
+            )
+        VALUES
+            (
+                1
+                ,
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                'System root model attribute'
+                ,
+                'This is the System root model attribute'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+				,
+				1
+				,
+				'Arbitrary'
+            )
+    SET IDENTITY_INSERT {0}[{1}].[User] OFF;
+"@
+
 # Execution of SQL scripts with biz.dfch.PS.System.Data
 
 # Test DB connection
@@ -391,6 +440,30 @@ try {
 catch
 {
 	Write-Warning "Inserting root item FAILED";
+	Write-Warning ($Error | Out-String);
+	Exit;
+}
+
+# Insertion of root ModelAttribute
+$Error.Clear();
+try {
+	Write-Host "START Inserting root model attribute [sqlCmdTextRootModelAttributeInsert] ...";
+	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[ModelAttribute] WHERE Id = 1" -As Default;
+	if($result.Count -lt 1)
+	{
+		$query = $sqlCmdTextRootModelAttributeInsert -f "[$database].", $Schema;
+		Write-Verbose $query;
+		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
+		Write-Host -ForegroundColor Green "Inserting root model attribute SUCCEEDED.";
+	}
+	else
+	{
+		Write-Warning "Root model attribute already exists. Skipping ...";
+	}
+}
+catch
+{
+	Write-Warning "Inserting root model attribute FAILED";
 	Write-Warning ($Error | Out-String);
 	Exit;
 }
