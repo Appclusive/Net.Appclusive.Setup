@@ -164,6 +164,8 @@ $sqlCmdTextTenantInsert = @"
 				,
 				[ParentId]
 				,
+				[Namespace]
+				,
 				[CustomerId]
 			)
         VALUES
@@ -187,6 +189,8 @@ $sqlCmdTextTenantInsert = @"
 				'Internal'
 				,
                 CONVERT(uniqueidentifier, '{2}')
+				,
+				'Net.Appclusive'
 				,
 				0
             )
@@ -260,6 +264,10 @@ $sqlCmdTextRootItemInsert = @"
 				[ParentId]
 				,
 				[ModelId]
+				,
+				[Status]
+				,
+				[NoInheritanceFromParent]
             )
         VALUES
             (
@@ -282,6 +290,10 @@ $sqlCmdTextRootItemInsert = @"
 				1
 				,
 				1
+				,
+				'InitialState'
+				,
+				'false'
             )
     SET IDENTITY_INSERT {0}[{1}].[User] OFF;
 "@
