@@ -26,7 +26,7 @@ PARAM
 	[String] $Schema = 'core'
 	,
 	[Parameter(Mandatory = $false)]
-	[String] $RootUserExternalId = ('{0}\{1}' -f $ENV:COMPUTERNAME, $ENV:USERNAME).ToLower()
+	[String] $SystemUserExternalId = ('{0}\{1}' -f $ENV:COMPUTERNAME, $ENV:USERNAME).ToLower()
 )
 
 if(!(Test-Path($AppConfig) -PathType Leaf))
@@ -84,7 +84,7 @@ switch($ConnectionType)
 }
 
 # SQL script templates
-$sqlCmdTextRootUserInsert = @"
+$sqlCmdTextSystemUserInsert = @"
     SET IDENTITY_INSERT {0}[{1}].[User] ON;
     INSERT INTO {0}[{1}].[User]
             (
@@ -120,7 +120,7 @@ $sqlCmdTextRootUserInsert = @"
                 ,
                 'SYSTEM'
                 ,
-                'This is the SYSTEM tenant root user'
+                'This is the system user'
                 ,
                 1
                 ,
@@ -360,50 +360,50 @@ catch
 	Exit;
 }
 
-# Insertion of SYSTEM/root tenant
+# Insertion of system tenant
 $Error.Clear();
 try {
-	Write-Host "START Inserting SYSTEM/root tenant [sqlCmdTextTenantInsert] ...";
+	Write-Host "START Inserting system tenant [sqlCmdTextTenantInsert] ...";
 	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Tenant] WHERE Id = CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')" -As Default;
 	if($result.Count -lt 1)
 	{
 		$query = $sqlCmdTextTenantInsert -f "[$database].", $Schema, '11111111-1111-1111-1111-111111111111', 'SYSTEM_TENANT';
 		Write-Verbose $query;
 		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
-		Write-Host -ForegroundColor Green "Inserting SYSTEM/root tenant SUCCEEDED.";
+		Write-Host -ForegroundColor Green "Inserting system tenant SUCCEEDED.";
 	}
 	else
 	{
-		Write-Warning "SYSTEM/root tenant already exists. Skipping ...";
+		Write-Warning "System tenant already exists. Skipping ...";
 	}
 }
 catch
 {
-	Write-Warning ("Inserting SYSTEM/root tenant FAILED");
+	Write-Warning ("Inserting system tenant FAILED");
 	Write-Warning ($Error | Out-String);
 	Exit;
 }
 
-# Insertion of root user
+# Insertion of SYSTEM user
 $Error.Clear();
 try {
-	Write-Host "START Inserting root user [sqlCmdTextRootUserInsert] ...";
+	Write-Host "START Inserting system user [sqlCmdTextSystemUserInsert] ...";
 	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[User] WHERE Id = 1" -As Default;
 	if($result.Count -lt 1)
 	{
-		$query = $sqlCmdTextRootUserInsert -f "[$database].", $Schema, $RootUserExternalId;
+		$query = $sqlCmdTextSystemUserInsert -f "[$database].", $Schema, $SystemUserExternalId;
 		Write-Verbose $query;
 		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
-		Write-Host -ForegroundColor Green "Inserting root user SUCCEEDED.";
+		Write-Host -ForegroundColor Green "Inserting system user SUCCEEDED.";
 	}
 	else
 	{
-		Write-Warning "Root user already exists. Skipping ...";
+		Write-Warning "System user already exists. Skipping ...";
 	}
 }
 catch
 {
-	Write-Warning "Inserting root user FAILED";
+	Write-Warning "Inserting system user FAILED";
 	Write-Warning ($Error | Out-String);
 	Exit;
 }
