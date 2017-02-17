@@ -196,6 +196,47 @@ $sqlCmdTextTenantInsert = @"
             )
 "@
 
+$sqlCmdTextRootBehaviourInsert = @"
+    SET IDENTITY_INSERT {0}[{1}].[Behaviour] ON;
+    INSERT INTO {0}[{1}].[Behaviour]
+            (
+				[Id]
+				,
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+            )
+        VALUES
+            (
+                1
+                ,
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                'Net.Appclusive.Public.Engine.BaseBehaviour'
+                ,
+                'BaseBehaviour'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+            )
+    SET IDENTITY_INSERT {0}[{1}].[User] OFF;
+"@
+
 $sqlCmdTextRootModelInsert = @"
     SET IDENTITY_INSERT {0}[{1}].[Model] ON;
     INSERT INTO {0}[{1}].[Model]
@@ -404,6 +445,30 @@ try {
 catch
 {
 	Write-Warning "Inserting system user FAILED";
+	Write-Warning ($Error | Out-String);
+	Exit;
+}
+
+# Insertion of root behaviour
+$Error.Clear();
+try {
+	Write-Host "START Inserting root behaviour [sqlCmdTextRootBehaviourInsert] ...";
+	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Behaviour] WHERE Id = 1" -As Default;
+	if($result.Count -lt 1)
+	{
+		$query = $sqlCmdTextRootBehaviourInsert -f "[$database].", $Schema;
+		Write-Verbose $query;
+		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
+		Write-Host -ForegroundColor Green "Inserting root behaviour SUCCEEDED.";
+	}
+	else
+	{
+		Write-Warning "Root behaviour already exists. Skipping ...";
+	}
+}
+catch
+{
+	Write-Warning "Inserting root behaviour FAILED";
 	Write-Warning ($Error | Out-String);
 	Exit;
 }
