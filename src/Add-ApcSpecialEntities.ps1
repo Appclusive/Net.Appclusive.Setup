@@ -432,7 +432,7 @@ $sqlCmdTextRootAclInsert = @"
 				,
 				1
 				,
-				'Arbitrary'
+				'true'
             )
     SET IDENTITY_INSERT {0}[{1}].[Acl] OFF;
 "@
