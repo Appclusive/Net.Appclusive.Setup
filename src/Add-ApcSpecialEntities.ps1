@@ -5,7 +5,7 @@
 	,
     ConfirmImpact = 'Medium'
 	,
-	HelpURI = 'http://docs.appclusive.net/en/latest/Setup.html'
+	HelpURI = 'http://docs.appclusive.net/en/latest/Installation/Setup/'
 )]
 PARAM
 (
