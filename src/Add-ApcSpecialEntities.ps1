@@ -234,7 +234,7 @@ $sqlCmdTextRootBehaviourInsert = @"
                 ,
                 GETDATE()
             )
-    SET IDENTITY_INSERT {0}[{1}].[User] OFF;
+    SET IDENTITY_INSERT {0}[{1}].[Behaviour] OFF;
 "@
 
 $sqlCmdTextRootModelInsert = @"
@@ -279,7 +279,7 @@ $sqlCmdTextRootModelInsert = @"
 				,
 				1
             )
-    SET IDENTITY_INSERT {0}[{1}].[User] OFF;
+    SET IDENTITY_INSERT {0}[{1}].[Model] OFF;
 "@
 
 $sqlCmdTextRootItemInsert = @"
@@ -336,7 +336,7 @@ $sqlCmdTextRootItemInsert = @"
 				,
 				'false'
             )
-    SET IDENTITY_INSERT {0}[{1}].[User] OFF;
+    SET IDENTITY_INSERT {0}[{1}].[Item] OFF;
 "@
 
 $sqlCmdTextRootModelAttributeInsert = @"
@@ -385,7 +385,7 @@ $sqlCmdTextRootModelAttributeInsert = @"
 				,
 				'Arbitrary'
             )
-    SET IDENTITY_INSERT {0}[{1}].[User] OFF;
+    SET IDENTITY_INSERT {0}[{1}].[ModelAttribute] OFF;
 "@
 
 # Execution of SQL scripts with biz.dfch.PS.System.Data
