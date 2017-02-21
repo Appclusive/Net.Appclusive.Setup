@@ -167,6 +167,36 @@ $sqlCmdTextBehaviourInsertTemplate = @"
             )
 "@
 
+$sqlCmdTextBehaviourChildBehaviourInsertTemplate = @"
+    INSERT INTO [{0}].[{1}].[BehaviourChildBehaviour]
+            (
+				[BehaviourId]
+				,
+				[ChildBehaviourId]
+            )
+        VALUES
+            (
+                '{2}'
+                ,
+                '{3}'
+            )
+"@
+
+$sqlCmdTextBehaviourParentBehaviourInsertTemplate = @"
+    INSERT INTO [{0}].[{1}].[BehaviourParentBehaviour]
+            (
+				[BehaviourId]
+				,
+				[ParentBehaviourId]
+            )
+        VALUES
+            (
+                '{2}'
+                ,
+                '{3}'
+            )
+"@
+
 $sqlCmdTextModelAttributeInsertTemplate = @"
     INSERT INTO [{0}].[{1}].[ModelAttribute]
             (
@@ -236,13 +266,13 @@ function InsertRow($Query)
 {
 	$Error.Clear();
 	try {
-		Write-Host 'START Inserting entity ...';
+		Write-Host 'START Inserting row ...';
 		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $Query -As Default;
-		Write-Host -ForegroundColor Green 'Inserting entity SUCCEEDED.';
+		Write-Host -ForegroundColor Green 'Inserting row SUCCEEDED.';
 	}
 	catch
 	{
-		Write-Warning ('Inserting entity FAILED');
+		Write-Warning ('Inserting row FAILED');
 		Write-Warning ($Error | Out-String);
 		Exit;
 	}
@@ -284,12 +314,28 @@ if (EntityNotExisting -Table $behaviourTable -Name 'Net.Appclusive.Examples.Geom
 {
 	$query = $sqlCmdTextBehaviourInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviour', 'ShapeBehaviour', $shapeBehaviourDefinitionId;
 	InsertRow -Query $query;
+	
+	$shapeBehaviourId = GetIdOfEntityByName -Table $behaviourTable -Name 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviour';
+	
+	$query = $sqlCmdTextBehaviourChildBehaviourInsertTemplate -f $database, $Schema, 1, $shapeBehaviourId;
+	InsertRow -Query $query;
+	
+	$query = $sqlCmdTextBehaviourParentBehaviourInsertTemplate -f $database, $Schema, $shapeBehaviourId, 1;
+	InsertRow -Query $query;
 }
 
 $locationBehaviourDefinitionId = GetIdOfEntityByName -Table $behaviourTable -Name 'Net.Appclusive.Examples.Engine.V001.LocationBehaviourDefinition';
 if (EntityNotExisting -Table $behaviourTable -Name 'Net.Appclusive.Examples.Engine.V001.LocationBehaviour')
 {
 	$query = $sqlCmdTextBehaviourInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Engine.V001.LocationBehaviour', 'LocationBehaviour', $locationBehaviourDefinitionId;
+	InsertRow -Query $query;
+	
+	$locationBehaviourId = GetIdOfEntityByName -Table $behaviourTable -Name 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviour';
+	
+	$query = $sqlCmdTextBehaviourChildBehaviourInsertTemplate -f $database, $Schema, 1, $locationBehaviourId;
+	InsertRow -Query $query;
+	
+	$query = $sqlCmdTextBehaviourParentBehaviourInsertTemplate -f $database, $Schema, $locationBehaviourId, 1;
 	InsertRow -Query $query;
 }
 
