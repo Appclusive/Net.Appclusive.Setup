@@ -136,7 +136,7 @@ $sqlCmdTextSystemUserInsert = @"
 				,
 				'system@appclusive.net'
 				,
-				0
+				false
             )
     SET IDENTITY_INSERT [{0}].[{1}].[User] OFF;
 "@
@@ -395,7 +395,7 @@ $sqlCmdTextRootAclInsert = @"
 				,
 				1
 				,
-				'true'
+				true
             )
     SET IDENTITY_INSERT [{0}].[{1}].[Acl] OFF;
 "@
