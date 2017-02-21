@@ -5,7 +5,7 @@
 	,
     ConfirmImpact = 'Medium'
 	,
-	HelpURI = 'http://docs.appclusive.net/en/latest/Examples'
+	HelpURI = 'http://docs.appclusive.net/en/latest/Examples/Examples/'
 )]
 PARAM
 (
@@ -653,24 +653,24 @@ if (EntityNotExisting -Table $modelAttrTable -Name 'Net.Appclusive.Examples.Engi
 
 # Insertion of Catalogue ACL
 $aclTable = 'Acl';
-if (EntityNotExisting -Table $aclTable -Name 'Demo Catalogue ACL')
+if (EntityNotExisting -Table $aclTable -Name 'Example Catalogue ACL')
 {
-	$query = $sqlCmdTextAclInsertTemplate -f $database, $Schema, 'Demo Catalogue ACL', 'Demo Catalogue ACL', 1, $false;
+	$query = $sqlCmdTextAclInsertTemplate -f $database, $Schema, 'Example Catalogue ACL', 'Example Catalogue ACL', 1, $false;
 	InsertRow -Query $query;
 }
-$catalogueAclId = GetIdOfEntityByName -Table $aclTable -Name 'Demo Catalogue ACL';
+$catalogueAclId = GetIdOfEntityByName -Table $aclTable -Name 'Example Catalogue ACL';
 Contract-Assert($catalogueAclId);
 
 
 # Insertion of Catalogue
 $catalogueTable = 'Catalogue';
 
-if (EntityNotExisting -Table $catalogueTable -Name 'Demo Catalogue')
+if (EntityNotExisting -Table $catalogueTable -Name 'Example Catalogue')
 {
-	$query = $sqlCmdTextCatalogueInsertTemplate -f $database, $Schema, 'Demo Catalogue', 'Demo Catalogue', $catalogueAclId;
+	$query = $sqlCmdTextCatalogueInsertTemplate -f $database, $Schema, 'Example Catalogue', 'Example Catalogue', $catalogueAclId;
 	InsertRow -Query $query;
 }
-$catalogueId = GetIdOfEntityByName -Table $catalogueTable -Name 'Demo Catalogue';
+$catalogueId = GetIdOfEntityByName -Table $catalogueTable -Name 'Example Catalogue';
 Contract-Assert($catalogueId);
 
 
