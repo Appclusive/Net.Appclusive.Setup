@@ -266,6 +266,166 @@ $sqlCmdTextModelModelAttributeInsertTemplate = @"
             )
 "@
 
+$sqlCmdTextAclInsertTemplate = @"
+    INSERT INTO [{0}].[{1}].[Acl]
+            (
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+				,
+				[ParentId]
+				,
+				[NoInheritanceFromParent]
+            )
+        VALUES
+            (
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                '{2}'
+                ,
+                '{3}'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+				,
+				'{4}'
+				,
+				'{5}'
+            )
+"@
+
+$sqlCmdTextCatalogueInsertTemplate = @"
+    INSERT INTO [{0}].[{1}].[Catalogue]
+            (
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+				,
+				[AclId]
+            )
+        VALUES
+            (
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                '{2}'
+                ,
+                '{3}'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+				,
+				{4}
+            )
+"@
+
+$sqlCmdTextCatalogueItemInsertTemplate = @"
+    INSERT INTO [{0}].[{1}].[CatalogueItem]
+            (
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+				,
+				[CatalogueId]
+            )
+        VALUES
+            (
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                '{2}'
+                ,
+                '{3}'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+				,
+				'{4}'
+            )
+"@
+
+$sqlCmdTextBlueprintInsertTemplate = @"
+    INSERT INTO [{0}].[{1}].[Blueprint]
+            (
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+				,
+				[CatalogueItemId]
+            )
+        VALUES
+            (
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                '{2}'
+                ,
+                '{3}'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+				,
+				'{4}'
+            )
+"@
+
 # Execution of SQL scripts with biz.dfch.PS.System.Data
 
 # Test DB connection
@@ -308,6 +468,8 @@ function InsertRow($Query)
 	}
 }
 
+
+
 # Insertion of Models
 $modelTable = 'Model';
 $baseModelId = 1;
@@ -343,6 +505,8 @@ if (EntityNotExisting -Table $modelTable -Name 'Net.Appclusive.Examples.Engine.V
 }
 $locationBehaviourDefinitionModelId = GetIdOfEntityByName -Table $modelTable -Name 'Net.Appclusive.Examples.Engine.V001.LocationBehaviourDefinition';
 Contract-Assert($locationBehaviourDefinitionModelId);
+
+
 
 # Insertion of Behaviours
 $behaviourTable = 'Behaviour';
@@ -394,6 +558,8 @@ if (EntityNotExisting -Table $behaviourTable -Name 'Net.Appclusive.Examples.Engi
 	$query = $sqlCmdTextModelBehaviourInsertTemplate -f $database, $Schema, $locationBehaviourDefinitionModelId, $locationBehaviourId;
 	InsertRow -Query $query;
 }
+
+
 
 # Insertion of ModelAttributes
 $modelAttrTable = 'ModelAttribute';
@@ -476,14 +642,52 @@ if (EntityNotExisting -Table $modelAttrTable -Name 'Net.Appclusive.Examples.Engi
 }
 
 
-# Insertion of Blueprint
-$BlueprpintTable = 'Blueprint';
+
+# Insertion of Catalogue ACL
+$aclTable = 'Acl';
+if (EntityNotExisting -Table $aclTable -Name 'Demo Catalogue ACL')
+{
+	$query = $sqlCmdTextAclInsertTemplate -f $database, $Schema, 'Demo Catalogue ACL', 'Demo Catalogue ACL', 1, $false;
+	InsertRow -Query $query;
+}
+$catalogueAclId = GetIdOfEntityByName -Table $aclTable -Name 'Demo Catalogue ACL';
+Contract-Assert($catalogueAclId);
+
 
 # Insertion of Catalogue
-$CatalogueTable = 'Catalogue';
+$catalogueTable = 'Catalogue';
 
-# Insertion of CatalogueItem
-$CatalogueItemTable = 'CatalogueItem';
+if (EntityNotExisting -Table $catalogueTable -Name 'Demo Catalogue')
+{
+	$query = $sqlCmdTextCatalogueInsertTemplate -f $database, $Schema, 'Demo Catalogue', 'Demo Catalogue', $catalogueAclId;
+	InsertRow -Query $query;
+}
+$catalogueId = GetIdOfEntityByName -Table $catalogueTable -Name 'Demo Catalogue';
+Contract-Assert($catalogueId);
+
+
+
+# # Insertion of CatalogueItem
+# $catalogueItemTable = 'CatalogueItem';
+
+# if (EntityNotExisting -Table $catalogueItemTable -Name 'Rectangle')
+# {
+	# $query = $sqlCmdTextCatalogueItemInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', $catalogueId;
+	# InsertRow -Query $query;
+# }
+# $catalogueItemId = GetIdOfEntityByName -Table $catalogueItemTable -Name 'Rectangle';
+# Contract-Assert($catalogueItemId);
+
+
+
+# # Insertion of Blueprint
+# $blueprpintTable = 'Blueprint';
+
+# if (EntityNotExisting -Table $blueprpintTable -Name 'Rectangle')
+# {
+	# $query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', $catalogueItemId;
+	# InsertRow -Query $query;
+# }
 
 
 #
