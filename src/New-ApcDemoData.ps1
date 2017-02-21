@@ -236,13 +236,13 @@ function InsertRow($Query)
 {
 	$Error.Clear();
 	try {
-		Write-Host "START Inserting entity ...";
+		Write-Host 'START Inserting entity ...';
 		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $Query -As Default;
-		Write-Host -ForegroundColor Green "Inserting entity SUCCEEDED.";
+		Write-Host -ForegroundColor Green 'Inserting entity SUCCEEDED.';
 	}
 	catch
 	{
-		Write-Warning ("Inserting entity FAILED");
+		Write-Warning ('Inserting entity FAILED');
 		Write-Warning ($Error | Out-String);
 		Exit;
 	}
@@ -251,43 +251,43 @@ function InsertRow($Query)
 # Insertion of Models
 $baseModelId = 1;
 
-if (EntityNotExisting -Table "Model" -Name "Net.Appclusive.Examples.Geometry.V001.ShapeBehaviourDefinition")
+if (EntityNotExisting -Table 'Model' -Name 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviourDefinition')
 {
-	$query = $sqlCmdTextModelInsertTemplate -f $database, $Schema, "Net.Appclusive.Examples.Geometry.V001.ShapeBehaviourDefinition", "ShapeBehaviourDefinition", $baseModelId, $false, 'NULL';
+	$query = $sqlCmdTextModelInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviourDefinition', 'ShapeBehaviourDefinition', $baseModelId, $false, 'NULL';
 	InsertRow -Query $query;
 }
 
-$shapeBehaviourDefinitionId = GetIdOfEntityByName -Table "Model" -Name "Net.Appclusive.Examples.Geometry.V001.ShapeBehaviourDefinition";
-if (EntityNotExisting -Table "Model" -Name "Net.Appclusive.Examples.Geometry.V001.Shape")
+$shapeBehaviourDefinitionId = GetIdOfEntityByName -Table 'Model' -Name 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviourDefinition';
+if (EntityNotExisting -Table 'Model' -Name 'Net.Appclusive.Examples.Geometry.V001.Shape')
 {
-	$query = $sqlCmdTextModelInsertTemplate -f $database, $Schema, "Net.Appclusive.Examples.Geometry.V001.Shape", "Shape", $shapeBehaviourDefinitionId, $false, $null;
+	$query = $sqlCmdTextModelInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Geometry.V001.Shape', 'Shape', $shapeBehaviourDefinitionId, $false, 'NULL';
 	InsertRow -Query $query;
 }
 
-$shapeId = GetIdOfEntityByName -Table "Model" -Name "Net.Appclusive.Examples.Geometry.V001.Shape";
-if (EntityNotExisting -Table "Model" -Name "Net.Appclusive.Examples.Geometry.V001.Rectangle")
+$shapeId = GetIdOfEntityByName -Table 'Model' -Name 'Net.Appclusive.Examples.Geometry.V001.Shape';
+if (EntityNotExisting -Table 'Model' -Name 'Net.Appclusive.Examples.Geometry.V001.Rectangle')
 {
-	$query = $sqlCmdTextModelInsertTemplate -f $database, $Schema, "Net.Appclusive.Examples.Geometry.V001.Rectangle", "Rectangle", $shapeId, $false, $null;
+	$query = $sqlCmdTextModelInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Geometry.V001.Rectangle', 'Rectangle', $shapeId, $false, 'NULL';
 	InsertRow -Query $query;
 }
 
-if (EntityNotExisting -Table "Model" -Name "Net.Appclusive.Examples.Engine.V001.LocationBehaviourDefinition")
+if (EntityNotExisting -Table 'Model' -Name 'Net.Appclusive.Examples.Engine.V001.LocationBehaviourDefinition')
 {
-	$query = $sqlCmdTextModelInsertTemplate -f $database, $Schema, "Net.Appclusive.Examples.Engine.V001.LocationBehaviourDefinition", "LocationBehaviourDefinition", $baseModelId, $false, $null;
+	$query = $sqlCmdTextModelInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Engine.V001.LocationBehaviourDefinition', 'LocationBehaviourDefinition', $baseModelId, $false, 'NULL';
 	InsertRow -Query $query;
 }
 
-# Insertion of Behaviours
-if (EntityNotExisting -Table "Behaviour" -Name "Net.Appclusive.Examples.Geometry.V001.ShapeBehaviour")
+# # Insertion of Behaviours
+if (EntityNotExisting -Table 'Behaviour' -Name 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviour')
 {
-	$query = $sqlCmdTextBehaviourInsertTemplate -f $database, $Schema, "Net.Appclusive.Examples.Geometry.V001.ShapeBehaviour", "ShapeBehaviour", $shapeBehaviourDefinitionId;
+	$query = $sqlCmdTextBehaviourInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviour', 'ShapeBehaviour', $shapeBehaviourDefinitionId;
 	InsertRow -Query $query;
 }
 
-$locationBehaviourDefinitionId = GetIdOfEntityByName -Table "Model" -Name "Net.Appclusive.Examples.Engine.V001.LocationBehaviourDefinition";
-if (EntityNotExisting -Table "Behaviour" -Name "Net.Appclusive.Examples.Engine.V001.LocationBehaviour")
+$locationBehaviourDefinitionId = GetIdOfEntityByName -Table 'Model' -Name 'Net.Appclusive.Examples.Engine.V001.LocationBehaviourDefinition';
+if (EntityNotExisting -Table 'Behaviour' -Name 'Net.Appclusive.Examples.Engine.V001.LocationBehaviour')
 {
-	$query = $sqlCmdTextBehaviourInsertTemplate -f $database, $Schema, "Net.Appclusive.Examples.Engine.V001.LocationBehaviour", "LocationBehaviour", $locationBehaviourDefinitionId;
+	$query = $sqlCmdTextBehaviourInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Engine.V001.LocationBehaviour', 'LocationBehaviour', $locationBehaviourDefinitionId;
 	InsertRow -Query $query;
 }
 
