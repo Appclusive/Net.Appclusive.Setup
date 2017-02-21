@@ -125,7 +125,7 @@ $sqlCmdTextModelInsertTemplate = @"
 				,
 				{4}
 				,
-				{5}
+				'{5}'
 				,
 				{6}
             )
@@ -256,7 +256,7 @@ $baseModelId = 1;
 
 if (EntityNotExisting -Table "Model" -Name "Net.Appclusive.Examples.Geometry.V001.ShapeBehaviourDefinition")
 {
-	$query = $sqlCmdTextModelInsertTemplate -f $database, $Schema, "Net.Appclusive.Examples.Geometry.V001.ShapeBehaviourDefinition", "ShapeBehaviourDefinition", $baseModelId, $false, $null;
+	$query = $sqlCmdTextModelInsertTemplate -f $database, $Schema, "Net.Appclusive.Examples.Geometry.V001.ShapeBehaviourDefinition", "ShapeBehaviourDefinition", $baseModelId, $false, 'NULL';
 	InsertRow -Query $query;
 }
 
