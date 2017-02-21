@@ -405,6 +405,10 @@ $sqlCmdTextBlueprintInsertTemplate = @"
 				[Modified]
 				,
 				[CatalogueItemId]
+				,
+				[Value]
+				,
+				[AclId]
             )
         VALUES
             (
@@ -423,6 +427,10 @@ $sqlCmdTextBlueprintInsertTemplate = @"
                 GETDATE()
 				,
 				'{4}'
+				,
+				'{5}'
+				,
+				'{6}'
             )
 "@
 
@@ -680,12 +688,23 @@ Contract-Assert($catalogueItemId);
 
 
 
+# Insertion of Blueprint ACL
+$aclTable = 'Acl';
+if (EntityNotExisting -Table $aclTable -Name 'Rectangle Blueprint ACL')
+{
+	$query = $sqlCmdTextAclInsertTemplate -f $database, $Schema, 'Rectangle Blueprint ACL', 'Rectangle Blueprint ACL', 1, $false;
+	InsertRow -Query $query;
+}
+$blueprintAclId = GetIdOfEntityByName -Table $aclTable -Name 'Rectangle Blueprint ACL';
+Contract-Assert($catalogueAclId);
+
+
 # Insertion of Blueprint
 $blueprpintTable = 'Blueprint';
 
 if (EntityNotExisting -Table $blueprpintTable -Name 'Rectangle')
 {
-	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', $catalogueItemId;
+	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', $catalogueItemId, '{}', $blueprintAclId;
 	InsertRow -Query $query;
 }
 
