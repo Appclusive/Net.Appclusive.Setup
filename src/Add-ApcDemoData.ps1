@@ -268,6 +268,7 @@ function GetIdOfEntityByName($Table, $Name)
 {
 	$query = "SELECT Id FROM [$Schema].[{0}] WHERE Name = '{1}'" -f $Table, $Name;
 	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Table;
+	Contract.Assert($result.Id);
 	return $result.Id;
 }
 
