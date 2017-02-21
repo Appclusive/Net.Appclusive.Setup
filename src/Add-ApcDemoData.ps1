@@ -251,6 +251,21 @@ $sqlCmdTextModelAttributeInsertTemplate = @"
             )
 "@
 
+$sqlCmdTextModelModelAttributeInsertTemplate = @"
+    INSERT INTO [{0}].[{1}].[ModelModelAttribute]
+            (
+				[ModelId]
+				,
+				[ModelAttributeId]
+            )
+        VALUES
+            (
+                {2}
+                ,
+                {3}
+            )
+"@
+
 # Execution of SQL scripts with biz.dfch.PS.System.Data
 
 # Test DB connection
@@ -382,6 +397,93 @@ if (EntityNotExisting -Table $behaviourTable -Name 'Net.Appclusive.Examples.Engi
 
 # Insertion of ModelAttributes
 $modelAttrTable = 'ModelAttribute';
+
+if (EntityNotExisting -Table $modelAttrTable -Name 'Net.Appclusive.Examples.Geometry.Shape.Area')
+{
+	$query = $sqlCmdTextModelAttributeInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Geometry.Shape.Area', 'Area', [double].FullName;
+	InsertRow -Query $query;
+	
+	$areaModelAttributeId = GetIdOfEntityByName -Table $modelAttrTable -Name 'Net.Appclusive.Examples.Geometry.Shape.Area';
+	Contract-Assert($areaModelAttributeId);
+	
+	# Model <-> ModelAttribute relations
+	$query = $sqlCmdTextModelModelAttributeInsertTemplate -f $database, $Schema, $shapeBehaviourDefinitionModelId, $areaModelAttributeId;
+	InsertRow -Query $query;
+	
+	$query = $sqlCmdTextModelModelAttributeInsertTemplate -f $database, $Schema, $shapeModelId, $areaModelAttributeId;
+	InsertRow -Query $query;
+	
+	$query = $sqlCmdTextModelModelAttributeInsertTemplate -f $database, $Schema, $rectangleModelId, $areaModelAttributeId;
+	InsertRow -Query $query;
+}
+
+if (EntityNotExisting -Table $modelAttrTable -Name 'Net.Appclusive.Examples.Geometry.Shape.Vertex')
+{
+	$query = $sqlCmdTextModelAttributeInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Geometry.Shape.Vertex', 'Vertex', [int].FullName;
+	InsertRow -Query $query;
+	
+	$vertexModelAttributeId = GetIdOfEntityByName -Table $modelAttrTable -Name 'Net.Appclusive.Examples.Geometry.Shape.Vertex';
+	Contract-Assert($vertexModelAttributeId);
+	
+	# Model <-> ModelAttribute relations
+	$query = $sqlCmdTextModelModelAttributeInsertTemplate -f $database, $Schema, $shapeModelId, $vertexModelAttributeId;
+	InsertRow -Query $query;
+	
+	$query = $sqlCmdTextModelModelAttributeInsertTemplate -f $database, $Schema, $rectangleModelId, $vertexModelAttributeId;
+	InsertRow -Query $query;
+}
+
+if (EntityNotExisting -Table $modelAttrTable -Name 'Net.Appclusive.Examples.Geometry.Rectangle.Width')
+{
+	$query = $sqlCmdTextModelAttributeInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Geometry.Rectangle.Width', 'Width', [int].FullName;
+	InsertRow -Query $query;
+	
+	$widthModelAttributeId = GetIdOfEntityByName -Table $modelAttrTable -Name 'Net.Appclusive.Examples.Geometry.Rectangle.Width';
+	Contract-Assert($widthModelAttributeId);
+	
+	# Model <-> ModelAttribute relations
+	$query = $sqlCmdTextModelModelAttributeInsertTemplate -f $database, $Schema, $rectangleModelId, $widthModelAttributeId;
+	InsertRow -Query $query;
+}
+
+if (EntityNotExisting -Table $modelAttrTable -Name 'Net.Appclusive.Examples.Geometry.Rectangle.Heigth')
+{
+	$query = $sqlCmdTextModelAttributeInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Geometry.Rectangle.Heigth', 'Heigth', [int].FullName;
+	InsertRow -Query $query;
+	
+	$heigthModelAttributeId = GetIdOfEntityByName -Table $modelAttrTable -Name 'Net.Appclusive.Examples.Geometry.Rectangle.Heigth';
+	Contract-Assert($heigthModelAttributeId);
+	
+	# Model <-> ModelAttribute relations
+	$query = $sqlCmdTextModelModelAttributeInsertTemplate -f $database, $Schema, $rectangleModelId, $heigthModelAttributeId;
+	InsertRow -Query $query;
+}
+
+if (EntityNotExisting -Table $modelAttrTable -Name 'Net.Appclusive.Examples.Engine.Location.Name')
+{
+	$query = $sqlCmdTextModelAttributeInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Engine.Location.Name', 'Name', [string].FullName;
+	InsertRow -Query $query;
+	
+	$locationNameModelAttributeId = GetIdOfEntityByName -Table $modelAttrTable -Name 'Net.Appclusive.Examples.Engine.Location.Name';
+	Contract-Assert($locationNameModelAttributeId);
+	
+	# Model <-> ModelAttribute relations
+	$query = $sqlCmdTextModelModelAttributeInsertTemplate -f $database, $Schema, $locationBehaviourDefinitionModelId, $locationNameModelAttributeId;
+	InsertRow -Query $query;
+	
+	$query = $sqlCmdTextModelModelAttributeInsertTemplate -f $database, $Schema, $rectangleModelId, $locationNameModelAttributeId;
+	InsertRow -Query $query;
+}
+
+
+# Insertion of Blueprint
+$BlueprpintTable = 'Blueprint';
+
+# Insertion of Catalogue
+$CatalogueTable = 'Catalogue';
+
+# Insertion of CatalogueItem
+$CatalogueItemTable = 'CatalogueItem';
 
 
 #
