@@ -85,8 +85,8 @@ switch($ConnectionType)
 
 # SQL script templates
 $sqlCmdTextSystemUserInsert = @"
-    SET IDENTITY_INSERT {0}[{1}].[User] ON;
-    INSERT INTO {0}[{1}].[User]
+    SET IDENTITY_INSERT [{0}].[{1}].[User] ON;
+    INSERT INTO [{0}].[{1}].[User]
             (
 				[Id]
 				,
@@ -138,11 +138,11 @@ $sqlCmdTextSystemUserInsert = @"
 				,
 				0
             )
-    SET IDENTITY_INSERT {0}[{1}].[User] OFF;
+    SET IDENTITY_INSERT [{0}].[{1}].[User] OFF;
 "@
 
 $sqlCmdTextTenantInsert = @"
-    INSERT INTO {0}[{1}].[Tenant]
+    INSERT INTO [{0}].[{1}].[Tenant]
             (
 				[Id]
 				,
@@ -197,8 +197,8 @@ $sqlCmdTextTenantInsert = @"
 "@
 
 $sqlCmdTextRootBehaviourInsert = @"
-    SET IDENTITY_INSERT {0}[{1}].[Behaviour] ON;
-    INSERT INTO {0}[{1}].[Behaviour]
+    SET IDENTITY_INSERT [{0}].[{1}].[Behaviour] ON;
+    INSERT INTO [{0}].[{1}].[Behaviour]
             (
 				[Id]
 				,
@@ -234,12 +234,12 @@ $sqlCmdTextRootBehaviourInsert = @"
                 ,
                 GETDATE()
             )
-    SET IDENTITY_INSERT {0}[{1}].[Behaviour] OFF;
+    SET IDENTITY_INSERT [{0}].[{1}].[Behaviour] OFF;
 "@
 
 $sqlCmdTextRootModelInsert = @"
-    SET IDENTITY_INSERT {0}[{1}].[Model] ON;
-    INSERT INTO {0}[{1}].[Model]
+    SET IDENTITY_INSERT [{0}].[{1}].[Model] ON;
+    INSERT INTO [{0}].[{1}].[Model]
             (
 				[Id]
 				,
@@ -279,12 +279,12 @@ $sqlCmdTextRootModelInsert = @"
 				,
 				1
             )
-    SET IDENTITY_INSERT {0}[{1}].[Model] OFF;
+    SET IDENTITY_INSERT [{0}].[{1}].[Model] OFF;
 "@
 
 $sqlCmdTextRootItemInsert = @"
-    SET IDENTITY_INSERT {0}[{1}].[Item] ON;
-    INSERT INTO {0}[{1}].[Item]
+    SET IDENTITY_INSERT [{0}].[{1}].[Item] ON;
+    INSERT INTO [{0}].[{1}].[Item]
             (
 				[Id]
 				,
@@ -336,12 +336,12 @@ $sqlCmdTextRootItemInsert = @"
 				,
 				'false'
             )
-    SET IDENTITY_INSERT {0}[{1}].[Item] OFF;
+    SET IDENTITY_INSERT [{0}].[{1}].[Item] OFF;
 "@
 
 $sqlCmdTextRootAclInsert = @"
-    SET IDENTITY_INSERT {0}[{1}].[Acl] ON;
-    INSERT INTO {0}[{1}].[Acl]
+    SET IDENTITY_INSERT [{0}].[{1}].[Acl] ON;
+    INSERT INTO [{0}].[{1}].[Acl]
             (
 				[Id]
 				,
@@ -385,7 +385,7 @@ $sqlCmdTextRootAclInsert = @"
 				,
 				'true'
             )
-    SET IDENTITY_INSERT {0}[{1}].[Acl] OFF;
+    SET IDENTITY_INSERT [{0}].[{1}].[Acl] OFF;
 "@
 
 # Execution of SQL scripts with biz.dfch.PS.System.Data
@@ -408,7 +408,7 @@ try {
 	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Tenant] WHERE Id = CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')" -As Default;
 	if($result.Count -lt 1)
 	{
-		$query = $sqlCmdTextTenantInsert -f "[$database].", $Schema, '11111111-1111-1111-1111-111111111111', 'SYSTEM_TENANT';
+		$query = $sqlCmdTextTenantInsert -f $database, $Schema, '11111111-1111-1111-1111-111111111111', 'SYSTEM_TENANT';
 		Write-Verbose $query;
 		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
 		Write-Host -ForegroundColor Green "Inserting system tenant SUCCEEDED.";
@@ -432,7 +432,7 @@ try {
 	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[User] WHERE Id = 1" -As Default;
 	if($result.Count -lt 1)
 	{
-		$query = $sqlCmdTextSystemUserInsert -f "[$database].", $Schema, $SystemUserExternalId;
+		$query = $sqlCmdTextSystemUserInsert -f $database, $Schema, $SystemUserExternalId;
 		Write-Verbose $query;
 		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
 		Write-Host -ForegroundColor Green "Inserting system user SUCCEEDED.";
@@ -456,7 +456,7 @@ try {
 	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Behaviour] WHERE Id = 1" -As Default;
 	if($result.Count -lt 1)
 	{
-		$query = $sqlCmdTextRootBehaviourInsert -f "[$database].", $Schema;
+		$query = $sqlCmdTextRootBehaviourInsert -f $database, $Schema;
 		Write-Verbose $query;
 		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
 		Write-Host -ForegroundColor Green "Inserting root behaviour SUCCEEDED.";
@@ -480,7 +480,7 @@ try {
 	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Model] WHERE Id = 1" -As Default;
 	if($result.Count -lt 1)
 	{
-		$query = $sqlCmdTextRootModelInsert -f "[$database].", $Schema;
+		$query = $sqlCmdTextRootModelInsert -f $database, $Schema;
 		Write-Verbose $query;
 		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
 		Write-Host -ForegroundColor Green "Inserting root model SUCCEEDED.";
@@ -504,7 +504,7 @@ try {
 	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Item] WHERE Id = 1" -As Default;
 	if($result.Count -lt 1)
 	{
-		$query = $sqlCmdTextRootItemInsert -f "[$database].", $Schema;
+		$query = $sqlCmdTextRootItemInsert -f $database, $Schema;
 		Write-Verbose $query;
 		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
 		Write-Host -ForegroundColor Green "Inserting root item SUCCEEDED.";
@@ -528,7 +528,7 @@ try {
 	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Acl] WHERE Id = 1" -As Default;
 	if($result.Count -lt 1)
 	{
-		$query = $sqlCmdTextRootAclInsert -f "[$database].", $Schema;
+		$query = $sqlCmdTextRootAclInsert -f $database, $Schema;
 		Write-Verbose $query;
 		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
 		Write-Host -ForegroundColor Green "Inserting root acl SUCCEEDED.";
