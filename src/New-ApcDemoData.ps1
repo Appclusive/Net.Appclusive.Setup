@@ -84,45 +84,6 @@ switch($ConnectionType)
 }
 
 # SQL script templates
-$sqlCmdTextBehaviourInsertTemplate = @"
-    INSERT INTO [{0}].[{1}].[Behaviour]
-            (
-				[Tid]
-				,
-				[Name]
-				,
-				[Description]
-				,
-				[CreatedById]
-				,
-				[ModifiedById]
-				,
-				[Created]
-				,
-				[Modified]
-				,
-				[BehaviourDefinitionId]
-            )
-        VALUES
-            (
-                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
-                ,
-                '{2}'
-                ,
-                '{3}'
-                ,
-                1
-                ,
-                1
-                ,
-                GETDATE()
-                ,
-                GETDATE()
-				,
-				{4}
-            )
-"@
-
 $sqlCmdTextModelInsertTemplate = @"
     INSERT INTO [{0}].[{1}].[Model]
             (
@@ -167,6 +128,45 @@ $sqlCmdTextModelInsertTemplate = @"
 				{5}
 				,
 				{6}
+            )
+"@
+
+$sqlCmdTextBehaviourInsertTemplate = @"
+    INSERT INTO [{0}].[{1}].[Behaviour]
+            (
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+				,
+				[BehaviourDefinitionId]
+            )
+        VALUES
+            (
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                '{2}'
+                ,
+                '{3}'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+				,
+				{4}
             )
 "@
 
