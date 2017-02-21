@@ -176,9 +176,9 @@ $sqlCmdTextBehaviourChildBehaviourInsertTemplate = @"
             )
         VALUES
             (
-                '{2}'
+                {2}
                 ,
-                '{3}'
+                {3}
             )
 "@
 
@@ -191,9 +191,9 @@ $sqlCmdTextBehaviourParentBehaviourInsertTemplate = @"
             )
         VALUES
             (
-                '{2}'
+                {2}
                 ,
-                '{3}'
+                {3}
             )
 "@
 
