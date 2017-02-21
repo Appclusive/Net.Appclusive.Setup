@@ -232,16 +232,16 @@ function GetIdOfEntityByName($Table, $Name)
 function EntityNotExisting($Table, $Name)
 {
 	$result = GetIdOfEntityByName -Table $Table -Name $Name;
-	return ($result.Count -gt 0);
+	return ($result.Count -lt 1);
 }
 
 function InsertRow($Query)
 {
 	$Error.Clear();
 	try {
-		Write-Host "START Inserting ...";
+		Write-Host "START Inserting entity ...";
 		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $Query -As Default;
-		Write-Host -ForegroundColor Green "Inserting system tenant SUCCEEDED.";
+		Write-Host -ForegroundColor Green "Inserting entity SUCCEEDED.";
 	}
 	catch
 	{
