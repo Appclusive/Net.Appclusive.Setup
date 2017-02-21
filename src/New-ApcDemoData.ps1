@@ -24,9 +24,6 @@ PARAM
 	,
 	[Parameter(Mandatory = $false)]
 	[String] $Schema = 'core'
-	,
-	[Parameter(Mandatory = $false)]
-	[String] $SystemUserExternalId = ('{0}\{1}' -f $ENV:COMPUTERNAME, $ENV:USERNAME).ToLower()
 )
 
 if(!(Test-Path($AppConfig) -PathType Leaf))
