@@ -197,6 +197,21 @@ $sqlCmdTextBehaviourParentBehaviourInsertTemplate = @"
             )
 "@
 
+$sqlCmdTextModelBehaviourInsertTemplate = @"
+    INSERT INTO [{0}].[{1}].[ModelBehaviour]
+            (
+				[ModelId]
+				,
+				[BehaviourId]
+            )
+        VALUES
+            (
+                {2}
+                ,
+                {3}
+            )
+"@
+
 $sqlCmdTextModelAttributeInsertTemplate = @"
     INSERT INTO [{0}].[{1}].[ModelAttribute]
             (
@@ -287,55 +302,75 @@ if (EntityNotExisting -Table $modelTable -Name 'Net.Appclusive.Examples.Geometry
 	$query = $sqlCmdTextModelInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviourDefinition', 'ShapeBehaviourDefinition', $baseModelId, $false, 'NULL';
 	InsertRow -Query $query;
 }
+$shapeBehaviourDefinitionModelId = GetIdOfEntityByName -Table $modelTable -Name 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviourDefinition';
 
-$shapeBehaviourDefinitionId = GetIdOfEntityByName -Table $modelTable -Name 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviourDefinition';
 if (EntityNotExisting -Table $modelTable -Name 'Net.Appclusive.Examples.Geometry.V001.Shape')
 {
-	$query = $sqlCmdTextModelInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Geometry.V001.Shape', 'Shape', $shapeBehaviourDefinitionId, $false, 'NULL';
+	$query = $sqlCmdTextModelInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Geometry.V001.Shape', 'Shape', $shapeBehaviourDefinitionModelId, $false, 'NULL';
 	InsertRow -Query $query;
 }
+$shapeModelId = GetIdOfEntityByName -Table $modelTable -Name 'Net.Appclusive.Examples.Geometry.V001.Shape';
 
-$shapeId = GetIdOfEntityByName -Table $modelTable -Name 'Net.Appclusive.Examples.Geometry.V001.Shape';
 if (EntityNotExisting -Table $modelTable -Name 'Net.Appclusive.Examples.Geometry.V001.Rectangle')
 {
-	$query = $sqlCmdTextModelInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Geometry.V001.Rectangle', 'Rectangle', $shapeId, $false, 'NULL';
+	$query = $sqlCmdTextModelInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Geometry.V001.Rectangle', 'Rectangle', $shapeModelId, $false, 'NULL';
 	InsertRow -Query $query;
 }
+$rectangleModelId = GetIdOfEntityByName -Table $modelTable -Name 'Net.Appclusive.Examples.Geometry.V001.Rectangle';
 
 if (EntityNotExisting -Table $modelTable -Name 'Net.Appclusive.Examples.Engine.V001.LocationBehaviourDefinition')
 {
 	$query = $sqlCmdTextModelInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Engine.V001.LocationBehaviourDefinition', 'LocationBehaviourDefinition', $baseModelId, $false, 'NULL';
 	InsertRow -Query $query;
 }
+$locationBehaviourDefinitionModelId = GetIdOfEntityByName -Table $modelTable -Name 'Net.Appclusive.Examples.Engine.V001.LocationBehaviourDefinition';
 
-# # Insertion of Behaviours
+# Insertion of Behaviours
 $behaviourTable = 'Behaviour';
 if (EntityNotExisting -Table $behaviourTable -Name 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviour')
 {
-	$query = $sqlCmdTextBehaviourInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviour', 'ShapeBehaviour', $shapeBehaviourDefinitionId;
+	$query = $sqlCmdTextBehaviourInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviour', 'ShapeBehaviour', $shapeBehaviourDefinitionModelId;
 	InsertRow -Query $query;
 	
 	$shapeBehaviourId = GetIdOfEntityByName -Table $behaviourTable -Name 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviour';
 	
+	# Behaviour parent/child relations
 	$query = $sqlCmdTextBehaviourChildBehaviourInsertTemplate -f $database, $Schema, 1, $shapeBehaviourId;
 	InsertRow -Query $query;
 	
 	$query = $sqlCmdTextBehaviourParentBehaviourInsertTemplate -f $database, $Schema, $shapeBehaviourId, 1;
 	InsertRow -Query $query;
-}
-
-$locationBehaviourDefinitionId = GetIdOfEntityByName -Table $behaviourTable -Name 'Net.Appclusive.Examples.Engine.V001.LocationBehaviourDefinition';
-if (EntityNotExisting -Table $behaviourTable -Name 'Net.Appclusive.Examples.Engine.V001.LocationBehaviour')
-{
-	$query = $sqlCmdTextBehaviourInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Engine.V001.LocationBehaviour', 'LocationBehaviour', $locationBehaviourDefinitionId;
+	
+	# Model <-> Behaviour relations
+	$query = $sqlCmdTextModelBehaviourInsertTemplate -f $database, $Schema, $shapeBehaviourDefinitionModelId, $shapeBehaviourId;
 	InsertRow -Query $query;
 	
-	$locationBehaviourId = GetIdOfEntityByName -Table $behaviourTable -Name 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviour';
+	$query = $sqlCmdTextModelBehaviourInsertTemplate -f $database, $Schema, $shapeModelId, $shapeBehaviourId;
+	InsertRow -Query $query;
 	
+	$query = $sqlCmdTextModelBehaviourInsertTemplate -f $database, $Schema, $rectangleModelId, $shapeBehaviourId;
+	InsertRow -Query $query;
+}
+
+if (EntityNotExisting -Table $behaviourTable -Name 'Net.Appclusive.Examples.Engine.V001.LocationBehaviour')
+{
+	$query = $sqlCmdTextBehaviourInsertTemplate -f $database, $Schema, 'Net.Appclusive.Examples.Engine.V001.LocationBehaviour', 'LocationBehaviour', $locationBehaviourDefinitionModelId;
+	InsertRow -Query $query;
+	
+	$locationBehaviourId = GetIdOfEntityByName -Table $behaviourTable -Name 'Net.Appclusive.Examples.Engine.V001.LocationBehaviour';
+	
+	# Behaviour parent/child relations
 	$query = $sqlCmdTextBehaviourChildBehaviourInsertTemplate -f $database, $Schema, 1, $locationBehaviourId;
 	InsertRow -Query $query;
 	
 	$query = $sqlCmdTextBehaviourParentBehaviourInsertTemplate -f $database, $Schema, $locationBehaviourId, 1;
+	InsertRow -Query $query;
+	
+	# Model <-> Behaviour relations
+	$query = $sqlCmdTextModelBehaviourInsertTemplate -f $database, $Schema, $rectangleModelId, $locationBehaviourId;
+	InsertRow -Query $query;
+	
+	$query = $sqlCmdTextModelBehaviourInsertTemplate -f $database, $Schema, $locationBehaviourDefinitionModelId, $locationBehaviourId;
 	InsertRow -Query $query;
 }
 
