@@ -303,6 +303,7 @@ if (EntityNotExisting -Table $modelTable -Name 'Net.Appclusive.Examples.Geometry
 	InsertRow -Query $query;
 }
 $shapeBehaviourDefinitionModelId = GetIdOfEntityByName -Table $modelTable -Name 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviourDefinition';
+Contract-Assert($shapeBehaviourDefinitionModelId);
 
 if (EntityNotExisting -Table $modelTable -Name 'Net.Appclusive.Examples.Geometry.V001.Shape')
 {
@@ -310,6 +311,7 @@ if (EntityNotExisting -Table $modelTable -Name 'Net.Appclusive.Examples.Geometry
 	InsertRow -Query $query;
 }
 $shapeModelId = GetIdOfEntityByName -Table $modelTable -Name 'Net.Appclusive.Examples.Geometry.V001.Shape';
+Contract-Assert($shapeModelId);
 
 if (EntityNotExisting -Table $modelTable -Name 'Net.Appclusive.Examples.Geometry.V001.Rectangle')
 {
@@ -317,6 +319,7 @@ if (EntityNotExisting -Table $modelTable -Name 'Net.Appclusive.Examples.Geometry
 	InsertRow -Query $query;
 }
 $rectangleModelId = GetIdOfEntityByName -Table $modelTable -Name 'Net.Appclusive.Examples.Geometry.V001.Rectangle';
+Contract-Assert($rectangleModelId);
 
 if (EntityNotExisting -Table $modelTable -Name 'Net.Appclusive.Examples.Engine.V001.LocationBehaviourDefinition')
 {
@@ -324,6 +327,7 @@ if (EntityNotExisting -Table $modelTable -Name 'Net.Appclusive.Examples.Engine.V
 	InsertRow -Query $query;
 }
 $locationBehaviourDefinitionModelId = GetIdOfEntityByName -Table $modelTable -Name 'Net.Appclusive.Examples.Engine.V001.LocationBehaviourDefinition';
+Contract-Assert($locationBehaviourDefinitionModelId);
 
 # Insertion of Behaviours
 $behaviourTable = 'Behaviour';
@@ -333,6 +337,7 @@ if (EntityNotExisting -Table $behaviourTable -Name 'Net.Appclusive.Examples.Geom
 	InsertRow -Query $query;
 	
 	$shapeBehaviourId = GetIdOfEntityByName -Table $behaviourTable -Name 'Net.Appclusive.Examples.Geometry.V001.ShapeBehaviour';
+	Contract-Assert($shapeBehaviourId);
 	
 	# Behaviour parent/child relations
 	$query = $sqlCmdTextBehaviourChildBehaviourInsertTemplate -f $database, $Schema, 1, $shapeBehaviourId;
@@ -358,6 +363,7 @@ if (EntityNotExisting -Table $behaviourTable -Name 'Net.Appclusive.Examples.Engi
 	InsertRow -Query $query;
 	
 	$locationBehaviourId = GetIdOfEntityByName -Table $behaviourTable -Name 'Net.Appclusive.Examples.Engine.V001.LocationBehaviour';
+	Contract-Assert($locationBehaviourId);
 	
 	# Behaviour parent/child relations
 	$query = $sqlCmdTextBehaviourChildBehaviourInsertTemplate -f $database, $Schema, 1, $locationBehaviourId;
