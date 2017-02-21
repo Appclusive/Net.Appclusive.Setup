@@ -667,27 +667,27 @@ Contract-Assert($catalogueId);
 
 
 
-# # Insertion of CatalogueItem
-# $catalogueItemTable = 'CatalogueItem';
+# Insertion of CatalogueItem
+$catalogueItemTable = 'CatalogueItem';
 
-# if (EntityNotExisting -Table $catalogueItemTable -Name 'Rectangle')
-# {
-	# $query = $sqlCmdTextCatalogueItemInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', $catalogueId;
-	# InsertRow -Query $query;
-# }
-# $catalogueItemId = GetIdOfEntityByName -Table $catalogueItemTable -Name 'Rectangle';
-# Contract-Assert($catalogueItemId);
+if (EntityNotExisting -Table $catalogueItemTable -Name 'Rectangle')
+{
+	$query = $sqlCmdTextCatalogueItemInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', $catalogueId;
+	InsertRow -Query $query;
+}
+$catalogueItemId = GetIdOfEntityByName -Table $catalogueItemTable -Name 'Rectangle';
+Contract-Assert($catalogueItemId);
 
 
 
-# # Insertion of Blueprint
-# $blueprpintTable = 'Blueprint';
+# Insertion of Blueprint
+$blueprpintTable = 'Blueprint';
 
-# if (EntityNotExisting -Table $blueprpintTable -Name 'Rectangle')
-# {
-	# $query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', $catalogueItemId;
-	# InsertRow -Query $query;
-# }
+if (EntityNotExisting -Table $blueprpintTable -Name 'Rectangle')
+{
+	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', $catalogueItemId;
+	InsertRow -Query $query;
+}
 
 
 #
