@@ -215,6 +215,8 @@ $sqlCmdTextRootBehaviourInsert = @"
 				[Created]
 				,
 				[Modified]
+				,
+				[BehaviourDefinitionId]
             )
         VALUES
             (
@@ -233,6 +235,8 @@ $sqlCmdTextRootBehaviourInsert = @"
                 GETDATE()
                 ,
                 GETDATE()
+				,
+				1
             )
     SET IDENTITY_INSERT [{0}].[{1}].[Behaviour] OFF;
 "@
@@ -258,6 +262,10 @@ $sqlCmdTextRootModelInsert = @"
 				[Modified]
 				,
 				[ParentId]
+				,
+				[IsActionModel]
+				,
+				[BehaviourDefinitionForId]
             )
         VALUES
             (
@@ -276,6 +284,10 @@ $sqlCmdTextRootModelInsert = @"
                 GETDATE()
                 ,
                 GETDATE()
+				,
+				1
+				,
+				false
 				,
 				1
             )
