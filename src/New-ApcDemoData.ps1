@@ -222,8 +222,8 @@ catch
 function GetIdOfEntityByName($Table, $Name)
 {
 	$query = "SELECT Id FROM [$Schema].[{0}] WHERE Name = '{1}'" -f $Table, $Name;
-	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
-	return $result;
+	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Table;
+	return $result.Id;
 }
 
 function EntityNotExisting($Table, $Name)
