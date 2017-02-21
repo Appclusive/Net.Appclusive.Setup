@@ -84,6 +84,61 @@ switch($ConnectionType)
 }
 
 # SQL script templates
+$sqlCmdTextTenantInsert = @"
+    INSERT INTO [{0}].[{1}].[Tenant]
+            (
+				[Id]
+				,
+                [Name]
+                ,
+                [Description]
+                ,
+                [CreatedById]
+                ,
+                [ModifiedById]
+                ,
+                [Created]
+                ,
+                [Modified]
+                ,
+				[MappedId]
+				,
+				[MappedType]
+				,
+				[ParentId]
+				,
+				[Namespace]
+				,
+				[CustomerId]
+			)
+        VALUES
+            (
+                CONVERT(uniqueidentifier, '{2}')
+                ,
+				'{3}'
+				,
+				'{3}'
+				,
+				1
+				,
+				1
+				,
+                GETDATE()
+                ,
+                GETDATE()
+                ,
+				'{2}'
+				,
+				'Internal'
+				,
+                CONVERT(uniqueidentifier, '{2}')
+				,
+				'Net.Appclusive'
+				,
+				0
+            )
+"@
+
 $sqlCmdTextSystemUserInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[User] ON;
     INSERT INTO [{0}].[{1}].[User]
@@ -139,61 +194,6 @@ $sqlCmdTextSystemUserInsert = @"
 				false
             )
     SET IDENTITY_INSERT [{0}].[{1}].[User] OFF;
-"@
-
-$sqlCmdTextTenantInsert = @"
-    INSERT INTO [{0}].[{1}].[Tenant]
-            (
-				[Id]
-				,
-                [Name]
-                ,
-                [Description]
-                ,
-                [CreatedById]
-                ,
-                [ModifiedById]
-                ,
-                [Created]
-                ,
-                [Modified]
-                ,
-				[MappedId]
-				,
-				[MappedType]
-				,
-				[ParentId]
-				,
-				[Namespace]
-				,
-				[CustomerId]
-			)
-        VALUES
-            (
-                CONVERT(uniqueidentifier, '{2}')
-                ,
-				'{3}'
-				,
-				'{3}'
-				,
-				1
-				,
-				1
-				,
-                GETDATE()
-                ,
-                GETDATE()
-                ,
-				'{2}'
-				,
-				'Internal'
-				,
-                CONVERT(uniqueidentifier, '{2}')
-				,
-				'Net.Appclusive'
-				,
-				0
-            )
 "@
 
 $sqlCmdTextRootBehaviourInsert = @"
