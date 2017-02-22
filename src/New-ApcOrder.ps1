@@ -74,8 +74,13 @@ $result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders 
 
 
 # Create Order
-$requestUri = "{0}/{1}/{2}" -f $AppclusiveApiBaseUri, $coreEndpoint, 'Orders';
+$requestUri = "{0}/{1}/{2}/Create" -f $AppclusiveApiBaseUri, $coreEndpoint, 'Orders';
 
+$createOrderDto = '{
+    "CartId":  "{0}"
+}' -f $cartId;
+
+$result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $createOrderDto;
 
 #
 # Copyright 2017 d-fens GmbH
