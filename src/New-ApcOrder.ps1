@@ -10,26 +10,15 @@ PARAM
 	[Parameter(Mandatory = $false)]
 	[ValidateNotNullOrEmpty()]
 	[String] $AppclusiveApiBaseUri = 'http://appclusive/api/'
-	,
-	[Parameter(Mandatory = $false)]
-	[ValidateNotNullOrEmpty()]
-	[String] $PathToPublicAssembly = 'C:\src\Net.Appclusive\src\Net.Appclusive.Public\bin\Debug\Net.Appclusive.Public.dll'
 )
 
 # Parameter validation
 $AppclusiveApiBaseUri = $AppclusiveApiBaseUri.TrimEnd('/');
 
-if(!(Test-Path($PathToPublicAssembly) -PathType Leaf))
-{
-	Write-Error "Net.Appclusive.Public.dll ('$PathToPublicAssembly') not found.";
-	Exit;
-}
-
-Add-Type -Path $PathToPublicAssembly;
-
 # global variables
 [string] $coreEndpoint = 'Core';
 [hashtable] $postHeaders = @{'Content-Type' = 'application/json'};
+
 
 # Load CatalogueItem
 $requestUri = "{0}/{1}/{2}?$filter=Name eq 'Example Catalogue'" -f $AppclusiveApiBaseUri, $coreEndpoint, 'Catalogues';
@@ -44,15 +33,45 @@ Contract-Assert($result);
 Contract-Assert($result.value);
 $rectangleCatalogueItem = $result.value;
 
+
 # Create Cart
 $requestUri = "{0}/{1}/{2}" -f $AppclusiveApiBaseUri, $coreEndpoint, 'Carts';
-$cart = [Net.Appclusive.Public.Domain.Catalogue.Cart]::new();
-$cart.Name = 'MyCart';
-$cart.Description = $cart.Name;
-$result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body ($cart | ConvertTo-Json);
+$cart = '{
+    "Id":  "0",
+    "Details":  {
+                    "Tid":  "00000000-0000-0000-0000-000000000000",
+                    "CreatedById":  "0",
+                    "ModifiedById":  "0",
+                    "Created":  "\/Date(-62135596800000)\/",
+                    "Modified":  "\/Date(-62135596800000)\/",
+                    "RowVersion":  null
+                },
+    "Name":  "MyCart",
+    "Description":  "MyCart"
+}';
+
+$result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $cart;
+$cartId = $result.Id;
 
 # Create CartItem
 $requestUri = "{0}/{1}/{2}" -f $AppclusiveApiBaseUri, $coreEndpoint, 'CartItem';
+$cartItem = '{
+    "Id":  "0",
+    "Details":  {
+                    "Tid":  "00000000-0000-0000-0000-000000000000",
+                    "CreatedById":  "0",
+                    "ModifiedById":  "0",
+                    "Created":  "\/Date(-62135596800000)\/",
+                    "Modified":  "\/Date(-62135596800000)\/",
+                    "RowVersion":  null
+                },
+    "Name":  "Rectangle",
+    "Description":  "Rectangle",
+	"CartId": "{0}"
+}' -f $cartId;
+
+$result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $cartItem;
+
 
 # Create Order
 $requestUri = "{0}/{1}/{2}" -f $AppclusiveApiBaseUri, $coreEndpoint, 'Orders';
