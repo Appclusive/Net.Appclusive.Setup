@@ -51,10 +51,12 @@ $cart = '{
 }';
 
 $result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $cart;
+Contract-Assert($result);
+Contract-Assert($result.Id);
 $cartId = $result.Id;
 
 # Create CartItem
-$requestUri = "{0}/{1}/{2}" -f $AppclusiveApiBaseUri, $coreEndpoint, 'CartItem';
+$requestUri = "{0}/{1}/{2}" -f $AppclusiveApiBaseUri, $coreEndpoint, 'CartItems';
 $cartItem = '{
     "Id":  "0",
     "Details":  {
@@ -68,7 +70,10 @@ $cartItem = '{
     "Name":  "Rectangle",
     "Description":  "Rectangle",
 	"CartId": "{0}"
-}' -f $cartId;
+}';
+$cartItem = $cartItem | ConvertFrom-Json;
+$cartItem.CartId = "$cartId";
+$cartItem = $cartItem | ConvertTo-Json;
 
 $result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $cartItem;
 
