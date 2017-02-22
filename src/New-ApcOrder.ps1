@@ -8,11 +8,11 @@
 PARAM
 (
 	[Parameter(Mandatory = $false)]
-	[ValidateNotNullOrEmpty]
+	[ValidateNotNullOrEmpty()]
 	[String] $AppclusiveApiBaseUri = 'http://appclusive/api/'
 	,
 	[Parameter(Mandatory = $false)]
-	[ValidateNotNullOrEmpty]
+	[ValidateNotNullOrEmpty()]
 	[String] $PathToPublicAssembly = 'C:\src\Net.Appclusive\src\Net.Appclusive.Public\bin\Debug\Net.Appclusive.Public.dll'
 )
 
@@ -48,6 +48,7 @@ $rectangleCatalogueItem = $result.value;
 $requestUri = "{0}/{1}/{2}" -f $AppclusiveApiBaseUri, $coreEndpoint, 'Carts';
 $cart = [Net.Appclusive.Public.Domain.Catalogue.Cart]::new();
 $cart.Name = 'MyCart';
+$cart.Description = $cart.Name;
 $result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body ($cart | ConvertTo-Json);
 
 # Create CartItem
