@@ -69,7 +69,7 @@ $cartItem = '{
                 },
     "Name":  "Rectangle",
     "Description":  "Rectangle",
-	"CartId": "{0}"
+	"CartId": ""
 }';
 $cartItem = $cartItem | ConvertFrom-Json;
 $cartItem.CartId = "$cartId";
@@ -82,8 +82,12 @@ $result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders 
 $requestUri = "{0}/{1}/{2}/Create" -f $AppclusiveApiBaseUri, $coreEndpoint, 'Orders';
 
 $createOrderDto = '{
-    "CartId":  "{0}"
-}' -f $cartId;
+    "CartId":  ""
+}';
+
+$createOrderDto = $createOrderDto | ConvertFrom-Json;
+$createOrderDto.CartId = $cartId;
+$createOrderDto = $createOrderDto | ConvertTo-Json;
 
 $result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $createOrderDto;
 
