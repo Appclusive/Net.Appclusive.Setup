@@ -42,8 +42,8 @@ $cart = '{
                     "Tid":  "00000000-0000-0000-0000-000000000000",
                     "CreatedById":  "0",
                     "ModifiedById":  "0",
-                    "Created":  "\/Date(-62135596800000)\/",
-                    "Modified":  "\/Date(-62135596800000)\/",
+                    "Created":  "2017-02-22T14:22:11",
+                    "Modified":  "2017-02-22T14:22:11",
                     "RowVersion":  null
                 },
     "Name":  "MyCart",
@@ -61,8 +61,8 @@ $cartItem = '{
                     "Tid":  "00000000-0000-0000-0000-000000000000",
                     "CreatedById":  "0",
                     "ModifiedById":  "0",
-                    "Created":  "\/Date(-62135596800000)\/",
-                    "Modified":  "\/Date(-62135596800000)\/",
+                    "Created":  "2017-02-22T14:22:11",
+                    "Modified":  "2017-02-22T14:22:11",
                     "RowVersion":  null
                 },
     "Name":  "Rectangle",
