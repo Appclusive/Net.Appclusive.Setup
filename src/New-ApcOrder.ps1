@@ -38,14 +38,6 @@ $rectangleCatalogueItem = $result.value;
 $requestUri = "{0}/{1}/{2}" -f $AppclusiveApiBaseUri, $coreEndpoint, 'Carts';
 $cart = '{
     "Id":  "0",
-    "Details":  {
-                    "Tid":  "00000000-0000-0000-0000-000000000000",
-                    "CreatedById":  "0",
-                    "ModifiedById":  "0",
-                    "Created":  "2017-02-22T14:22:11",
-                    "Modified":  "2017-02-22T14:22:11",
-                    "RowVersion":  null
-                },
     "Name":  "MyCart",
     "Description":  "MyCart"
 }';
@@ -59,14 +51,6 @@ $cartId = $result.Id;
 $requestUri = "{0}/{1}/{2}" -f $AppclusiveApiBaseUri, $coreEndpoint, 'CartItems';
 $cartItem = '{
     "Id":  "0",
-    "Details":  {
-                    "Tid":  "00000000-0000-0000-0000-000000000000",
-                    "CreatedById":  "0",
-                    "ModifiedById":  "0",
-                    "Created":  "2017-02-22T14:22:11",
-                    "Modified":  "2017-02-22T14:22:11",
-                    "RowVersion":  null
-                },
 	"Configuration": "Tralala",
     "Name":  "Rectangle",
     "Description":  "Rectangle",
