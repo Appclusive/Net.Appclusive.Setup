@@ -69,10 +69,12 @@ $cartItem = '{
                 },
     "Name":  "Rectangle",
     "Description":  "Rectangle",
-	"CartId": ""
+	"CartId": "",
+	"CatalogueItemId" : ""
 }';
 $cartItem = $cartItem | ConvertFrom-Json;
 $cartItem.CartId = "$cartId";
+$cartItem.CatalogueItemId = "$rectangleCatalogueItem.Id";
 $cartItem = $cartItem | ConvertTo-Json;
 
 $result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $cartItem;
