@@ -67,6 +67,7 @@ $cartItem = '{
                     "Modified":  "2017-02-22T14:22:11",
                     "RowVersion":  null
                 },
+	"Configuration": "Tralala",
     "Name":  "Rectangle",
     "Description":  "Rectangle",
 	"CartId": "",
@@ -74,7 +75,7 @@ $cartItem = '{
 }';
 $cartItem = $cartItem | ConvertFrom-Json;
 $cartItem.CartId = "$cartId";
-$cartItem.CatalogueItemId = "$rectangleCatalogueItem.Id";
+$cartItem.CatalogueItemId = $rectangleCatalogueItem.Id.ToString();
 $cartItem = $cartItem | ConvertTo-Json;
 
 $result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $cartItem;
