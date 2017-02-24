@@ -320,7 +320,7 @@ $sqlCmdTextRootItemInsert = @"
 				,
 				[Status]
 				,
-				[NoInheritanceFromParent]
+				[NoInheritance]
             )
         VALUES
             (
@@ -373,7 +373,7 @@ $sqlCmdTextRootAclInsert = @"
 				,
 				[ParentId]
 				,
-				[NoInheritanceFromParent]
+				[NoInheritance]
             )
         VALUES
             (

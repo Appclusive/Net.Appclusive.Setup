@@ -285,7 +285,7 @@ $sqlCmdTextAclInsertTemplate = @"
 				,
 				[ParentId]
 				,
-				[NoInheritanceFromParent]
+				[NoInheritance]
             )
         VALUES
             (
