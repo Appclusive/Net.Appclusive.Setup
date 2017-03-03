@@ -20,14 +20,14 @@ $AppclusiveApiBaseUri = $AppclusiveApiBaseUri.TrimEnd('/');
 [hashtable] $postHeaders = @{'Content-Type' = 'application/json'};
 
 
-# Load CatalogueItem
-$requestUri = "{0}/{1}/{2}?$filter=Name eq 'Example Catalogue'" -f $AppclusiveApiBaseUri, $coreEndpoint, 'Catalogues';
+# Load Catalogue & CatalogueItem
+$requestUri = '{0}/{1}/{2}?$filter=Name eq ''Example Catalogue''' -f $AppclusiveApiBaseUri, $coreEndpoint, 'Catalogues';
 $result = Invoke-RestMethod -Method Get -Uri $requestUri;
 Contract-Assert($result);
 Contract-Assert($result.value);
 $exampleCatalogue = $result.value;
 
-$requestUri = "{0}/{1}/{2}?$filter=CatalogueId eq {3}" -f $AppclusiveApiBaseUri, $coreEndpoint, 'CatalogueItems', $exampleCatalogue.Id;
+$requestUri = '{0}/{1}/{2}?$filter=CatalogueId eq {3}' -f $AppclusiveApiBaseUri, $coreEndpoint, 'CatalogueItems', $exampleCatalogue.Id;
 $result = Invoke-RestMethod -Method Get -Uri $requestUri;
 Contract-Assert($result);
 Contract-Assert($result.value);
@@ -35,7 +35,7 @@ $rectangleCatalogueItem = $result.value;
 
 
 # Create Cart
-$requestUri = "{0}/{1}/{2}" -f $AppclusiveApiBaseUri, $coreEndpoint, 'Carts';
+$requestUri = '{0}/{1}/{2}' -f $AppclusiveApiBaseUri, $coreEndpoint, 'Carts';
 $cart = '{
     "Id":  "0",
     "Name":  "MyCart",
@@ -48,7 +48,7 @@ Contract-Assert($result.Id);
 $cartId = $result.Id;
 
 # Create CartItem
-$requestUri = "{0}/{1}/{2}" -f $AppclusiveApiBaseUri, $coreEndpoint, 'CartItems';
+$requestUri = '{0}/{1}/{2}' -f $AppclusiveApiBaseUri, $coreEndpoint, 'CartItems';
 $cartItem = '{
     "Id":  "0",
 	"Configuration": "Tralala",
@@ -66,7 +66,7 @@ $result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders 
 
 
 # Create Order
-$requestUri = "{0}/{1}/{2}/Create" -f $AppclusiveApiBaseUri, $coreEndpoint, 'Orders';
+$requestUri = '{0}/{1}/{2}/Create' -f $AppclusiveApiBaseUri, $coreEndpoint, 'Orders';
 
 $createOrderDto = '{
     "CartId":  ""
