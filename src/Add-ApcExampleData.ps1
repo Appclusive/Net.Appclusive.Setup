@@ -366,6 +366,8 @@ $sqlCmdTextCatalogueItemInsertTemplate = @"
 				[Modified]
 				,
 				[CatalogueId]
+				,
+				[BlueprintId]
             )
         VALUES
             (
@@ -384,6 +386,8 @@ $sqlCmdTextCatalogueItemInsertTemplate = @"
                 GETDATE()
 				,
 				'{4}'
+				,
+				'{5}'
             )
 "@
 
@@ -403,8 +407,6 @@ $sqlCmdTextBlueprintInsertTemplate = @"
 				[Created]
 				,
 				[Modified]
-				,
-				[CatalogueItemId]
 				,
 				[Value]
 				,
@@ -429,8 +431,6 @@ $sqlCmdTextBlueprintInsertTemplate = @"
 				'{4}'
 				,
 				'{5}'
-				,
-				'{6}'
             )
 "@
 
@@ -674,22 +674,9 @@ $catalogueId = GetIdOfEntityByName -Table $catalogueTable -Name 'Example Catalog
 Contract-Assert($catalogueId);
 
 
-
-# Insertion of CatalogueItem
-$catalogueItemTable = 'CatalogueItem';
-
-if (EntityNotExisting -Table $catalogueItemTable -Name 'Rectangle')
-{
-	$query = $sqlCmdTextCatalogueItemInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', $catalogueId;
-	InsertRow -Query $query;
-}
-$catalogueItemId = GetIdOfEntityByName -Table $catalogueItemTable -Name 'Rectangle';
-Contract-Assert($catalogueItemId);
-
-
-
 # Insertion of Blueprint ACL
 $aclTable = 'Acl';
+
 if (EntityNotExisting -Table $aclTable -Name 'Rectangle Blueprint ACL')
 {
 	$query = $sqlCmdTextAclInsertTemplate -f $database, $Schema, 'Rectangle Blueprint ACL', 'Rectangle Blueprint ACL', 1, $false;
@@ -704,9 +691,21 @@ $blueprpintTable = 'Blueprint';
 
 if (EntityNotExisting -Table $blueprpintTable -Name 'Rectangle')
 {
-	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', $catalogueItemId, '{}', $blueprintAclId;
+	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', '{}', $blueprintAclId;
 	InsertRow -Query $query;
 }
+$blueprintId = GetIdOfEntityByName -Table $blueprpintTable -Name 'Rectangle';
+
+
+# Insertion of CatalogueItem
+$catalogueItemTable = 'CatalogueItem';
+
+if (EntityNotExisting -Table $catalogueItemTable -Name 'Rectangle')
+{
+	$query = $sqlCmdTextCatalogueItemInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', $catalogueId, $blueprintId;
+	InsertRow -Query $query;
+}
+
 
 
 #
