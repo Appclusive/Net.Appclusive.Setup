@@ -52,7 +52,11 @@ $cartId = $result.Id;
 $requestUri = '{0}/{1}/{2}' -f $AppclusiveApiBaseUri, $coreEndpoint, 'CartItems';
 $cartItem = '{
     "Id":  "0",
-	"Configuration": "Tralala",
+	"Configuration": 
+		[
+			{"Id": "42", "Value":"The answer to all question"},
+			{"Id": "666", "Value":"The number of the beast"}
+		],
     "Name":  "Rectangle",
     "Description":  "Rectangle",
 	"CartId": "",
@@ -78,6 +82,7 @@ $createOrderDto.CartId = $cartId;
 $createOrderDto = $createOrderDto | ConvertTo-Json;
 
 $result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $createOrderDto;
+
 
 #
 # Copyright 2017 d-fens GmbH
