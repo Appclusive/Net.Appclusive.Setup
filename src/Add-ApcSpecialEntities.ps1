@@ -346,7 +346,7 @@ $sqlCmdTextRootItemInsert = @"
 				,
 				'InitialState'
 				,
-				'false'
+				'true'
             )
     SET IDENTITY_INSERT [{0}].[{1}].[Item] OFF;
 "@
