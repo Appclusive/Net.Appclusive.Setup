@@ -400,6 +400,52 @@ $sqlCmdTextRootAclInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[Acl] OFF;
 "@
 
+$sqlCmdTextFullControlPermissionInsert = @"
+    SET IDENTITY_INSERT [{0}].[{1}].[Permission] ON;
+    INSERT INTO [{0}].[{1}].[Permission]
+            (
+				[Id]
+				,
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+				,
+				[Type]
+            )
+        VALUES
+            (
+                1
+                ,
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                'FullControl'
+                ,
+                'FullControl permission'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+				,
+				0
+            )
+    SET IDENTITY_INSERT [{0}].[{1}].[Permission] OFF;
+"@
+
+
 # Execution of SQL scripts with biz.dfch.PS.System.Data
 
 # Test DB connection
@@ -553,6 +599,30 @@ try {
 catch
 {
 	Write-Warning "Inserting root acl FAILED";
+	Write-Warning ($Error | Out-String);
+	Exit;
+}
+
+# Insertion of FullControl Permission
+$Error.Clear();
+try {
+	Write-Host "START Inserting FullControl permission [sqlCmdTextFullControlPermissionInsert] ...";
+	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Permission] WHERE Id = 1" -As Default;
+	if($result.Count -lt 1)
+	{
+		$query = $sqlCmdTextFullControlPermissionInsert -f $database, $Schema;
+		Write-Verbose $query;
+		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
+		Write-Host -ForegroundColor Green "Inserting FullControl permission SUCCEEDED.";
+	}
+	else
+	{
+		Write-Warning "FullControl permission already exists. Skipping ...";
+	}
+}
+catch
+{
+	Write-Warning "Inserting FullControl permission FAILED";
 	Write-Warning ($Error | Out-String);
 	Exit;
 }
