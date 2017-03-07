@@ -54,8 +54,10 @@ $cartItem = '{
     "Id":  "0",
 	"Configuration": 
 		[
-			{"Id": "42", "Value":"The answer to all question"},
-			{"Id": "666", "Value":"The number of the beast"}
+			{"Id": "2", "Value":"42"},
+			{"Id": "3", "Value":"666"}
+			{"Id": "4", "Value":"667"}
+			{"Id": "5", "Value":"Arbitrary Location"}
 		],
     "Name":  "Rectangle",
     "Description":  "Rectangle",
