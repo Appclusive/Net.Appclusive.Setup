@@ -400,7 +400,7 @@ $sqlCmdTextRootAclInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[Acl] OFF;
 "@
 
-$sqlCmdTextFullControlPermissionInsert = @"
+$sqlCmdTextPermissionInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[Permission] ON;
     INSERT INTO [{0}].[{1}].[Permission]
             (
@@ -424,13 +424,13 @@ $sqlCmdTextFullControlPermissionInsert = @"
             )
         VALUES
             (
-                1
+                {2}
                 ,
                 CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
                 ,
-                'FullControl'
+                '{3}'
                 ,
-                'FullControl permission'
+                '{3} permission'
                 ,
                 1
                 ,
@@ -606,11 +606,11 @@ catch
 # Insertion of FullControl Permission
 $Error.Clear();
 try {
-	Write-Host "START Inserting FullControl permission [sqlCmdTextFullControlPermissionInsert] ...";
+	Write-Host "START Inserting FullControl permission [sqlCmdTextPermissionInsert] ...";
 	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Permission] WHERE Id = 1" -As Default;
 	if($result.Count -lt 1)
 	{
-		$query = $sqlCmdTextFullControlPermissionInsert -f $database, $Schema;
+		$query = $sqlCmdTextPermissionInsert -f $database, $Schema, 1, 'FullControl';
 		Write-Verbose $query;
 		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
 		Write-Host -ForegroundColor Green "Inserting FullControl permission SUCCEEDED.";
