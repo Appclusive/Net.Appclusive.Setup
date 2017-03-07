@@ -411,6 +411,8 @@ $sqlCmdTextBlueprintInsertTemplate = @"
 				[Value]
 				,
 				[AclId]
+				,
+				[ModelId]
             )
         VALUES
             (
@@ -431,6 +433,8 @@ $sqlCmdTextBlueprintInsertTemplate = @"
 				'{4}'
 				,
 				'{5}'
+				,
+				'{6}'
             )
 "@
 
@@ -691,7 +695,7 @@ $blueprpintTable = 'Blueprint';
 
 if (EntityNotExisting -Table $blueprpintTable -Name 'Rectangle')
 {
-	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', '{}', $blueprintAclId;
+	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', '{}', $blueprintAclId, $rectangleModelId;
 	InsertRow -Query $query;
 }
 $blueprintId = GetIdOfEntityByName -Table $blueprpintTable -Name 'Rectangle';
