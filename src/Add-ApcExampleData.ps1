@@ -413,6 +413,8 @@ $sqlCmdTextBlueprintInsertTemplate = @"
 				[AclId]
 				,
 				[ModelId]
+				,
+				[WorkflowDefinition]
             )
         VALUES
             (
@@ -435,6 +437,8 @@ $sqlCmdTextBlueprintInsertTemplate = @"
 				'{5}'
 				,
 				'{6}'
+				,
+				'{7}'
             )
 "@
 
@@ -681,34 +685,47 @@ Contract-Assert($catalogueId);
 # Insertion of Blueprint ACL
 $aclTable = 'Acl';
 
-if (EntityNotExisting -Table $aclTable -Name 'Rectangle Blueprint ACL')
+if (EntityNotExisting -Table $aclTable -Name 'Shape Blueprint ACL')
 {
-	$query = $sqlCmdTextAclInsertTemplate -f $database, $Schema, 'Rectangle Blueprint ACL', 'Rectangle Blueprint ACL', 1, $false;
+	$query = $sqlCmdTextAclInsertTemplate -f $database, $Schema, 'Shape Blueprint ACL', 'Shape Blueprint ACL', 1, $false;
 	InsertRow -Query $query;
 }
-$blueprintAclId = GetIdOfEntityByName -Table $aclTable -Name 'Rectangle Blueprint ACL';
-Contract-Assert($catalogueAclId);
+$blueprintAclId = GetIdOfEntityByName -Table $aclTable -Name 'Shape Blueprint ACL';
+Contract-Assert($blueprintAclId);
 
 
-# Insertion of Blueprint
+# Insertion of Blueprints and CatalogueItems
 $blueprpintTable = 'Blueprint';
+$catalogueItemTable = 'CatalogueItem';
+
+if (EntityNotExisting -Table $blueprpintTable -Name 'Shape')
+{
+	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Shape', 'A Shape', '{}', $blueprintAclId, $shapeModelId, $null;
+	InsertRow -Query $query;
+}
+$blueprintId = GetIdOfEntityByName -Table $blueprpintTable -Name 'Shape';
+
+
+if (EntityNotExisting -Table $catalogueItemTable -Name 'Shape')
+{
+	$query = $sqlCmdTextCatalogueItemInsertTemplate -f $database, $Schema, 'Shape', 'A Shape', $catalogueId, $blueprintId;
+	InsertRow -Query $query;
+}
 
 if (EntityNotExisting -Table $blueprpintTable -Name 'Rectangle')
 {
-	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', '{}', $blueprintAclId, $rectangleModelId;
+	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', '{}', $blueprintAclId, $rectangleModelId, $null;
 	InsertRow -Query $query;
 }
 $blueprintId = GetIdOfEntityByName -Table $blueprpintTable -Name 'Rectangle';
 
-
-# Insertion of CatalogueItem
-$catalogueItemTable = 'CatalogueItem';
 
 if (EntityNotExisting -Table $catalogueItemTable -Name 'Rectangle')
 {
 	$query = $sqlCmdTextCatalogueItemInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', $catalogueId, $blueprintId;
 	InsertRow -Query $query;
 }
+
 
 
 
