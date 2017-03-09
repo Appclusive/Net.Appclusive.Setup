@@ -27,7 +27,7 @@ Contract-Assert($result);
 Contract-Assert($result.value);
 $exampleCatalogue = $result.value;
 
-$requestUri = '{0}/{1}/{2}?$filter=CatalogueId eq {3}' -f $AppclusiveApiBaseUri, $coreEndpoint, 'CatalogueItems', $exampleCatalogue.Id;
+$requestUri = '{0}/{1}/{2}?$filter=CatalogueId eq {3} and Name eq ''Shape''' -f $AppclusiveApiBaseUri, $coreEndpoint, 'CatalogueItems', $exampleCatalogue.Id;
 $result = Invoke-RestMethod -Method Get -Uri $requestUri;
 Contract-Assert($result);
 Contract-Assert($result.value);
@@ -52,15 +52,15 @@ $cartId = $result.Id;
 $requestUri = '{0}/{1}/{2}' -f $AppclusiveApiBaseUri, $coreEndpoint, 'CartItems';
 $cartItem = '{
     "Id":  "0",
+    "Name":  "Shape",
+    "Description":  "Shape",
+	"CartId": "",
+	"CatalogueItemId" : "",
 	"Configuration": 
 		[
 			{"Id": "1", "Value":"1764.00"},
 			{"Id": "2", "Value":"42"}
-		],
-    "Name":  "Shape",
-    "Description":  "Shape",
-	"CartId": "",
-	"CatalogueItemId" : ""
+		]
 }';
 $cartItem = $cartItem | ConvertFrom-Json;
 $cartItem.CartId = "$cartId";
