@@ -58,8 +58,8 @@ $cartItem = '{
 	"CatalogueItemId" : "",
 	"Configuration": 
 		[
-			{"Id": "1", "Value":"1764.00"},
-			{"Id": "2", "Value":"42"}
+			{"Id": "6", "Value":"1764.00"},
+			{"Id": "7", "Value":"42"}
 		]
 }';
 $cartItem = $cartItem | ConvertFrom-Json;
