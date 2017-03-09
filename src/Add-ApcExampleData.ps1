@@ -712,9 +712,10 @@ if (EntityNotExisting -Table $catalogueItemTable -Name 'Shape')
 	InsertRow -Query $query;
 }
 
+$rectangleActivity = [System.IO.File]::ReadAllText('C:\src\Net.Appclusive\src\Net.Appclusive.Examples\RectangleActivity.xaml');
 if (EntityNotExisting -Table $blueprpintTable -Name 'Rectangle')
 {
-	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', '{}', $blueprintAclId, $rectangleModelId, $null;
+	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', '{}', $blueprintAclId, $rectangleModelId, $rectangleActivity;
 	InsertRow -Query $query;
 }
 $blueprintId = GetIdOfEntityByName -Table $blueprpintTable -Name 'Rectangle';
