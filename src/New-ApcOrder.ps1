@@ -31,7 +31,7 @@ $requestUri = '{0}/{1}/{2}?$filter=CatalogueId eq {3}' -f $AppclusiveApiBaseUri,
 $result = Invoke-RestMethod -Method Get -Uri $requestUri;
 Contract-Assert($result);
 Contract-Assert($result.value);
-$rectangleCatalogueItem = $result.value;
+$shapeCatalogueItem = $result.value;
 
 
 # Create Cart
@@ -54,19 +54,17 @@ $cartItem = '{
     "Id":  "0",
 	"Configuration": 
 		[
-			{"Id": "2", "Value":"42"},
-			{"Id": "3", "Value":"666"},
-			{"Id": "4", "Value":"667"},
-			{"Id": "5", "Value":"Arbitrary Location"}
+			{"Id": "1", "Value":"1764.00"},
+			{"Id": "2", "Value":"42"}
 		],
-    "Name":  "Rectangle",
-    "Description":  "Rectangle",
+    "Name":  "Shape",
+    "Description":  "Shape",
 	"CartId": "",
 	"CatalogueItemId" : ""
 }';
 $cartItem = $cartItem | ConvertFrom-Json;
 $cartItem.CartId = "$cartId";
-$cartItem.CatalogueItemId = $rectangleCatalogueItem.Id.ToString();
+$cartItem.CatalogueItemId = $shapeCatalogueItem.Id.ToString();
 $cartItem = $cartItem | ConvertTo-Json;
 
 $result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $cartItem;
