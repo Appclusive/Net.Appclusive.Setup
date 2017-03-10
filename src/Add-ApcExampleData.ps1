@@ -414,7 +414,7 @@ $sqlCmdTextBlueprintInsertTemplate = @"
 				,
 				[ModelId]
 				,
-				[WorkflowDefinition]
+				[XamlDefinition]
             )
         VALUES
             (
