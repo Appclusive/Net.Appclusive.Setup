@@ -712,7 +712,105 @@ if (EntityNotExisting -Table $catalogueItemTable -Name 'Shape')
 	InsertRow -Query $query;
 }
 
-$rectangleActivity = [System.IO.File]::ReadAllText('C:\src\Net.Appclusive\src\Net.Appclusive.Examples\RectangleActivity.xaml');
+$rectangleActivity = '
+<Activity mc:Ignorable="sap sap2010 sads" x:Class="Net.Appclusive.Examples.RectangleActivity"
+ xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
+ xmlns:bdcc="clr-namespace:biz.dfch.CS.Commons;assembly=biz.dfch.CS.Commons"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:mca="clr-namespace:Microsoft.CSharp.Activities;assembly=System.Activities"
+ xmlns:naw="clr-namespace:Net.Appclusive.Workflows;assembly=Net.Appclusive.Workflows"
+ xmlns:sads="http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger"
+ xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation"
+ xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation"
+ xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=mscorlib"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="ParentItemId" Type="InArgument(x:Int64)" />
+    <x:Property Name="ModelName" Type="InArgument(x:String)" />
+    <x:Property Name="Configuration" Type="InArgument(bdcc:DictionaryParameters)" />
+  </x:Members>
+  <sap2010:ExpressionActivityEditor.ExpressionActivityEditor>C#</sap2010:ExpressionActivityEditor.ExpressionActivityEditor>
+  <sap2010:WorkflowViewState.IdRef>Net.Appclusive.Examples.RectangleActivity_1</sap2010:WorkflowViewState.IdRef>
+  <TextExpression.NamespacesForImplementation>
+    <sco:Collection x:TypeArguments="x:String">
+      <x:String>System</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>System.Data</x:String>
+      <x:String>System.Linq</x:String>
+      <x:String>System.Text</x:String>
+      <x:String>biz.dfch.CS.Commons</x:String>
+    </sco:Collection>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <sco:Collection x:TypeArguments="AssemblyReference">
+      <AssemblyReference>biz.dfch.CS.Commons</AssemblyReference>
+      <AssemblyReference>Newtonsoft.Json</AssemblyReference>
+      <AssemblyReference>System</AssemblyReference>
+      <AssemblyReference>System.ComponentModel.Annotations</AssemblyReference>
+      <AssemblyReference>System.ComponentModel.DataAnnotations</AssemblyReference>
+      <AssemblyReference>Net.Appclusive.Public</AssemblyReference>
+      <AssemblyReference>Microsoft.CSharp</AssemblyReference>
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>System.Data</AssemblyReference>
+      <AssemblyReference>System.ServiceModel</AssemblyReference>
+      <AssemblyReference>System.ServiceModel.Activities</AssemblyReference>
+      <AssemblyReference>System.Xaml</AssemblyReference>
+      <AssemblyReference>System.Xml</AssemblyReference>
+      <AssemblyReference>System.Xml.Linq</AssemblyReference>
+      <AssemblyReference>Net.Appclusive.Workflows</AssemblyReference>
+      <AssemblyReference>System.Core</AssemblyReference>
+      <AssemblyReference>mscorlib</AssemblyReference>
+      <AssemblyReference>Net.Appclusive.Examples</AssemblyReference>
+    </sco:Collection>
+  </TextExpression.ReferencesForImplementation>
+  <Parallel sap2010:WorkflowViewState.IdRef="Parallel_1">
+    <naw:BuildModel sap2010:WorkflowViewState.IdRef="BuildModel_1">
+      <naw:BuildModel.Configuration>
+        <InArgument x:TypeArguments="bdcc:DictionaryParameters">
+          <mca:CSharpValue x:TypeArguments="bdcc:DictionaryParameters">Configuration</mca:CSharpValue>
+        </InArgument>
+      </naw:BuildModel.Configuration>
+      <naw:BuildModel.ModelName>
+        <InArgument x:TypeArguments="x:String">
+          <mca:CSharpValue x:TypeArguments="x:String">ModelName</mca:CSharpValue>
+        </InArgument>
+      </naw:BuildModel.ModelName>
+      <naw:BuildModel.ParentItemId>
+        <InArgument x:TypeArguments="x:Int64">
+          <mca:CSharpValue x:TypeArguments="x:Int64">ParentItemId</mca:CSharpValue>
+        </InArgument>
+      </naw:BuildModel.ParentItemId>
+    </naw:BuildModel>
+    <naw:BuildModel>
+      <naw:BuildModel.Configuration>
+        <InArgument x:TypeArguments="bdcc:DictionaryParameters">
+          <mca:CSharpValue x:TypeArguments="bdcc:DictionaryParameters">Configuration</mca:CSharpValue>
+        </InArgument>
+      </naw:BuildModel.Configuration>
+      <naw:BuildModel.ModelName>
+        <InArgument x:TypeArguments="x:String">
+          <mca:CSharpValue x:TypeArguments="x:String">ModelName</mca:CSharpValue>
+        </InArgument>
+      </naw:BuildModel.ModelName>
+      <naw:BuildModel.ParentItemId>
+        <InArgument x:TypeArguments="x:Int64">
+          <mca:CSharpValue x:TypeArguments="x:Int64">ParentItemId</mca:CSharpValue>
+        </InArgument>
+      </naw:BuildModel.ParentItemId>
+      <sap2010:WorkflowViewState.IdRef>BuildModel_2</sap2010:WorkflowViewState.IdRef>
+    </naw:BuildModel>
+    <sads:DebugSymbol.Symbol>d0hDOlxzcmNcTmV0LkFwcGNsdXNpdmVcc3JjXE5ldC5BcHBjbHVzaXZlLkV4YW1wbGVzXFJlY3RhbmdsZUFjdGl2aXR5LnhhbWwJMwNYDgIBATQFRBYCAQ9FBVYWAgECQQtBVAIBGDwLPFICARQ3CzdnAgEQUgtSVAIBC00LTVICAQdIC0hnAgED</sads:DebugSymbol.Symbol>
+  </Parallel>
+  <sap2010:WorkflowViewState.ViewStateManager>
+    <sap2010:ViewStateManager>
+      <sap2010:ViewStateData Id="BuildModel_1" sap:VirtualizedContainerService.HintSize="200,114" />
+      <sap2010:ViewStateData Id="BuildModel_2" sap:VirtualizedContainerService.HintSize="200,114" />
+      <sap2010:ViewStateData Id="Parallel_1" sap:VirtualizedContainerService.HintSize="554,160" />
+      <sap2010:ViewStateData Id="Net.Appclusive.Examples.RectangleActivity_1" sap:VirtualizedContainerService.HintSize="594,240" />
+    </sap2010:ViewStateManager>
+  </sap2010:WorkflowViewState.ViewStateManager>
+</Activity>
+';
 if (EntityNotExisting -Table $blueprpintTable -Name 'Rectangle')
 {
 	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', '{}', $blueprintAclId, $rectangleModelId, $rectangleActivity;
