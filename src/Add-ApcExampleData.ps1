@@ -658,8 +658,6 @@ if (EntityNotExisting -Table $catalogueItemTable -Name 'Rectangle')
 }
 
 
-
-
 #
 # Copyright 2017 d-fens GmbH
 #
