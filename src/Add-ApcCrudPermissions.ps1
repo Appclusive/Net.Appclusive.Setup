@@ -140,7 +140,9 @@ catch
 
 # Insertion of Appclusive entity CRUD permission
 $domainDirectory = 'C:\src\Net.Appclusive.Public\src\Net.Appclusive.Public\Domain';
-$entityNames = Get-ChildItem $domainDirectory -Recurse -File | select -expand basename |? Name -NotContains 'Type' |? Name -NotContains 'Public';
+$fileNames = Get-ChildItem $domainDirectory -Recurse -File | select -expand basename
+$entityNames = $fileNames -notlike "*Type";
+$entityNames = $entityNames -notlike "Public*";
 $permissionNames = [System.Collections.ArrayList]::new();
 
 foreach ($entityName in $entityNames)
