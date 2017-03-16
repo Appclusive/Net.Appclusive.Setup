@@ -445,7 +445,7 @@ $sqlCmdTextPermissionInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[Permission] OFF;
 "@
 
-$sqlCmdTextWorkflowDefinitionInsert = @"
+$sqlCmdTextBuildModelWorkflowDefinitionInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[WorkflowDefinition] ON;
     INSERT INTO [{0}].[{1}].[WorkflowDefinition]
             (
@@ -469,13 +469,13 @@ $sqlCmdTextWorkflowDefinitionInsert = @"
             )
         VALUES
             (
-                {2}
+                1
                 ,
                 CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
                 ,
-                '{3}'
+                '{2}'
                 ,
-                '{3} workflow definition'
+                '{2} workflow definition'
                 ,
                 1
                 ,
@@ -676,11 +676,11 @@ catch
 # Insertion of BuildModel WorkflowDefinition
 $Error.Clear();
 try {
-	Write-Host "START Inserting BuildModel workflow definition [sqlCmdTextWorkflowDefinitionInsert] ...";
+	Write-Host "START Inserting BuildModel workflow definition [sqlCmdTextBuildModelWorkflowDefinitionInsert] ...";
 	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[WorkflowDefinition] WHERE Id = 1" -As Default;
 	if($result.Count -lt 1)
 	{
-		$query = $sqlCmdTextWorkflowDefinitionInsert -f $database, $Schema, 1, 'BuildModel';
+		$query = $sqlCmdTextBuildModelWorkflowDefinitionInsert -f $database, $Schema, 'BuildModel';
 		Write-Verbose $query;
 		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
 		Write-Host -ForegroundColor Green "Inserting BuildModel workflow definition SUCCEEDED.";
