@@ -32,6 +32,9 @@ if(!(Test-Path($AppConfig) -PathType Leaf))
 	Exit;
 }
 
+$rootAclId = 1;
+$buildModelWorkflowDefinitionId = 1;
+
 [xml] $xmlConfig = Get-Content -Raw $AppConfig;
 $connectionStringEntry = $xmlConfig.Configuration.ConnectionStrings.Add |? name -eq $ConnectionStringKey;
 $connectionString = $connectionStringEntry.connectionString;
@@ -348,6 +351,45 @@ $sqlCmdTextCatalogueItemInsertTemplate = @"
             )
 "@
 
+$sqlCmdTextWorkflowDefinitionInsertTemplate = @"
+    INSERT INTO [{0}].[{1}].[WorkflowDefinition]
+            (
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+				,
+				[Value]
+            )
+        VALUES
+            (
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                '{2}'
+                ,
+                '{2} workflow definition'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+				,
+				'{3}'
+            )
+"@
+
 $sqlCmdTextBlueprintInsertTemplate = @"
     INSERT INTO [{0}].[{1}].[Blueprint]
             (
@@ -369,7 +411,7 @@ $sqlCmdTextBlueprintInsertTemplate = @"
 				,
 				[ModelId]
 				,
-				[XamlDefinition]
+				[WorkflowDefinitionId]
             )
         VALUES
             (
@@ -611,16 +653,31 @@ if (EntityNotExisting -Table $modelAttrTable -Name 'Net.Appclusive.Examples.Engi
 }
 
 
+
 # Insertion of Catalogue
 $catalogueTable = 'Catalogue';
 
 if (EntityNotExisting -Table $catalogueTable -Name 'Example Catalogue')
 {
-	$query = $sqlCmdTextCatalogueInsertTemplate -f $database, $Schema, 'Example Catalogue', 'Example Catalogue', 1;
+	$query = $sqlCmdTextCatalogueInsertTemplate -f $database, $Schema, 'Example Catalogue', 'Example Catalogue', $rootAclId;
 	InsertRow -Query $query;
 }
 $catalogueId = GetIdOfEntityByName -Table $catalogueTable -Name 'Example Catalogue';
 Contract-Assert($catalogueId);
+
+
+
+# Insertion of WorkflowDefinition
+$workflowDefinitionTable = 'WorkflowDefinition';
+
+$rectangleWorkflowXaml = [System.IO.File]::ReadAllText('C:\src\Net.Appclusive.Blueprints\src\Net.Appclusive.Workflows\RectangleActivity.xaml');
+
+if (EntityNotExisting -Table $workflowDefinitionTable -Name 'Rectangle workflow definition')
+{
+	$query = $sqlCmdTextWorkflowDefinitionInsertTemplate -f $database, $Schema, 'Rectangle workflow definition', $rectangleWorkflowXaml;
+	InsertRow -Query $query;
+}
+$rectangleWorkflowDefinitionId = GetIdOfEntityByName -Table $workflowDefinitionTable -Name 'Rectangle workflow definition';
 
 
 
@@ -630,7 +687,7 @@ $catalogueItemTable = 'CatalogueItem';
 
 if (EntityNotExisting -Table $blueprpintTable -Name 'Shape')
 {
-	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Shape', 'A Shape', 1, $shapeModelId, $null;
+	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Shape', 'A Shape', $rootAclId, $shapeModelId, $buildModelWorkflowDefinitionId;
 	InsertRow -Query $query;
 }
 $blueprintId = GetIdOfEntityByName -Table $blueprpintTable -Name 'Shape';
@@ -642,10 +699,9 @@ if (EntityNotExisting -Table $catalogueItemTable -Name 'Shape')
 	InsertRow -Query $query;
 }
 
-$rectangleActivity = [System.IO.File]::ReadAllText('C:\src\Net.Appclusive\src\Net.Appclusive.Examples\RectangleActivity.xaml');
 if (EntityNotExisting -Table $blueprpintTable -Name 'Rectangle')
 {
-	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', 1, $rectangleModelId, $rectangleActivity;
+	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', $rootAclId, $rectangleModelId, $rectangleWorkflowDefinitionId;
 	InsertRow -Query $query;
 }
 $blueprintId = GetIdOfEntityByName -Table $blueprpintTable -Name 'Rectangle';
