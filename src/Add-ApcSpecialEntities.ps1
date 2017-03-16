@@ -445,6 +445,51 @@ $sqlCmdTextPermissionInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[Permission] OFF;
 "@
 
+$sqlCmdTextWorkflowDefinitionInsert = @"
+    SET IDENTITY_INSERT [{0}].[{1}].[WorkflowDefinition] ON;
+    INSERT INTO [{0}].[{1}].[WorkflowDefinition]
+            (
+				[Id]
+				,
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+				,
+				[Value]
+            )
+        VALUES
+            (
+                {2}
+                ,
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                '{3}'
+                ,
+                '{3} workflow definition'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+				,
+				''
+            )
+    SET IDENTITY_INSERT [{0}].[{1}].[WorkflowDefinition] OFF;
+"@
+
 
 # Execution of SQL scripts with biz.dfch.PS.System.Data
 
@@ -623,6 +668,31 @@ try {
 catch
 {
 	Write-Warning "Inserting FullControl permission FAILED";
+	Write-Warning ($Error | Out-String);
+	Exit;
+}
+
+
+# Insertion of BuildModel WorkflowDefinition
+$Error.Clear();
+try {
+	Write-Host "START Inserting BuildModel workflow definition [sqlCmdTextWorkflowDefinitionInsert] ...";
+	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[WorkflowDefinition] WHERE Id = 1" -As Default;
+	if($result.Count -lt 1)
+	{
+		$query = $sqlCmdTextWorkflowDefinitionInsert -f $database, $Schema, 1, 'BuildModel';
+		Write-Verbose $query;
+		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
+		Write-Host -ForegroundColor Green "Inserting BuildModel workflow definition SUCCEEDED.";
+	}
+	else
+	{
+		Write-Warning "BuildModel workflow definition already exists. Skipping ...";
+	}
+}
+catch
+{
+	Write-Warning "Inserting BuildModel workflow definition FAILED";
 	Write-Warning ($Error | Out-String);
 	Exit;
 }
