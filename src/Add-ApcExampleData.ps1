@@ -266,49 +266,6 @@ $sqlCmdTextModelModelAttributeInsertTemplate = @"
             )
 "@
 
-$sqlCmdTextAclInsertTemplate = @"
-    INSERT INTO [{0}].[{1}].[Acl]
-            (
-				[Tid]
-				,
-				[Name]
-				,
-				[Description]
-				,
-				[CreatedById]
-				,
-				[ModifiedById]
-				,
-				[Created]
-				,
-				[Modified]
-				,
-				[ParentId]
-				,
-				[NoInheritance]
-            )
-        VALUES
-            (
-                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
-                ,
-                '{2}'
-                ,
-                '{3}'
-                ,
-                1
-                ,
-                1
-                ,
-                GETDATE()
-                ,
-                GETDATE()
-				,
-				'{4}'
-				,
-				'{5}'
-            )
-"@
-
 $sqlCmdTextCatalogueInsertTemplate = @"
     INSERT INTO [{0}].[{1}].[Catalogue]
             (
@@ -408,8 +365,6 @@ $sqlCmdTextBlueprintInsertTemplate = @"
 				,
 				[Modified]
 				,
-				[Value]
-				,
 				[AclId]
 				,
 				[ModelId]
@@ -437,8 +392,6 @@ $sqlCmdTextBlueprintInsertTemplate = @"
 				'{5}'
 				,
 				'{6}'
-				,
-				'{7}'
             )
 "@
 
@@ -658,40 +611,17 @@ if (EntityNotExisting -Table $modelAttrTable -Name 'Net.Appclusive.Examples.Engi
 }
 
 
-
-# Insertion of Catalogue ACL
-$aclTable = 'Acl';
-if (EntityNotExisting -Table $aclTable -Name 'Example Catalogue ACL')
-{
-	$query = $sqlCmdTextAclInsertTemplate -f $database, $Schema, 'Example Catalogue ACL', 'Example Catalogue ACL', 1, $false;
-	InsertRow -Query $query;
-}
-$catalogueAclId = GetIdOfEntityByName -Table $aclTable -Name 'Example Catalogue ACL';
-Contract-Assert($catalogueAclId);
-
-
 # Insertion of Catalogue
 $catalogueTable = 'Catalogue';
 
 if (EntityNotExisting -Table $catalogueTable -Name 'Example Catalogue')
 {
-	$query = $sqlCmdTextCatalogueInsertTemplate -f $database, $Schema, 'Example Catalogue', 'Example Catalogue', $catalogueAclId;
+	$query = $sqlCmdTextCatalogueInsertTemplate -f $database, $Schema, 'Example Catalogue', 'Example Catalogue', 1;
 	InsertRow -Query $query;
 }
 $catalogueId = GetIdOfEntityByName -Table $catalogueTable -Name 'Example Catalogue';
 Contract-Assert($catalogueId);
 
-
-# Insertion of Blueprint ACL
-$aclTable = 'Acl';
-
-if (EntityNotExisting -Table $aclTable -Name 'Shape Blueprint ACL')
-{
-	$query = $sqlCmdTextAclInsertTemplate -f $database, $Schema, 'Shape Blueprint ACL', 'Shape Blueprint ACL', 1, $false;
-	InsertRow -Query $query;
-}
-$blueprintAclId = GetIdOfEntityByName -Table $aclTable -Name 'Shape Blueprint ACL';
-Contract-Assert($blueprintAclId);
 
 
 # Insertion of Blueprints and CatalogueItems
@@ -700,7 +630,7 @@ $catalogueItemTable = 'CatalogueItem';
 
 if (EntityNotExisting -Table $blueprpintTable -Name 'Shape')
 {
-	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Shape', 'A Shape', '{}', $blueprintAclId, $shapeModelId, $null;
+	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Shape', 'A Shape', 1, $shapeModelId, $null;
 	InsertRow -Query $query;
 }
 $blueprintId = GetIdOfEntityByName -Table $blueprpintTable -Name 'Shape';
@@ -715,7 +645,7 @@ if (EntityNotExisting -Table $catalogueItemTable -Name 'Shape')
 $rectangleActivity = [System.IO.File]::ReadAllText('C:\src\Net.Appclusive\src\Net.Appclusive.Examples\RectangleActivity.xaml');
 if (EntityNotExisting -Table $blueprpintTable -Name 'Rectangle')
 {
-	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', '{}', $blueprintAclId, $rectangleModelId, $rectangleActivity;
+	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Rectangle', 'A Rectangle', 1, $rectangleModelId, $rectangleActivity;
 	InsertRow -Query $query;
 }
 $blueprintId = GetIdOfEntityByName -Table $blueprpintTable -Name 'Rectangle';
