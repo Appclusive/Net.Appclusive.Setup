@@ -670,7 +670,7 @@ Contract-Assert($catalogueId);
 # Insertion of WorkflowDefinition
 $workflowDefinitionTable = 'WorkflowDefinition';
 
-$rectangleWorkflowXaml = [System.IO.File]::ReadAllText('C:\src\Net.Appclusive.Blueprints\src\Net.Appclusive.Workflows\RectangleActivity.xaml');
+$rectangleWorkflowXaml = [System.IO.File]::ReadAllText('C:\src\Net.Appclusive.Blueprints\src\Net.Appclusive.Workflows\RectangleBlueprint.xaml');
 
 if (EntityNotExisting -Table $workflowDefinitionTable -Name 'Rectangle workflow definition')
 {
