@@ -445,7 +445,7 @@ $sqlCmdTextPermissionInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[Permission] OFF;
 "@
 
-$sqlCmdTextBuildModelWorkflowDefinitionInsert = @"
+$sqlCmdTextInitialiseModelWorkflowDefinitionInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[WorkflowDefinition] ON;
     INSERT INTO [{0}].[{1}].[WorkflowDefinition]
             (
@@ -673,26 +673,26 @@ catch
 }
 
 
-# Insertion of BuildModel WorkflowDefinition
+# Insertion of InitialiseModel WorkflowDefinition
 $Error.Clear();
 try {
-	Write-Host "START Inserting BuildModel workflow definition [sqlCmdTextBuildModelWorkflowDefinitionInsert] ...";
+	Write-Host "START Inserting InitialiseModel workflow definition [sqlCmdTextInitialiseModelWorkflowDefinitionInsert] ...";
 	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[WorkflowDefinition] WHERE Id = 1" -As Default;
 	if($result.Count -lt 1)
 	{
-		$query = $sqlCmdTextBuildModelWorkflowDefinitionInsert -f $database, $Schema, 'BuildModel';
+		$query = $sqlCmdTextInitialiseModelWorkflowDefinitionInsert -f $database, $Schema, 'InitialiseModel';
 		Write-Verbose $query;
 		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
-		Write-Host -ForegroundColor Green "Inserting BuildModel workflow definition SUCCEEDED.";
+		Write-Host -ForegroundColor Green "Inserting InitialiseModel workflow definition SUCCEEDED.";
 	}
 	else
 	{
-		Write-Warning "BuildModel workflow definition already exists. Skipping ...";
+		Write-Warning "InitialiseModel workflow definition already exists. Skipping ...";
 	}
 }
 catch
 {
-	Write-Warning "Inserting BuildModel workflow definition FAILED";
+	Write-Warning "Inserting InitialiseModel workflow definition FAILED";
 	Write-Warning ($Error | Out-String);
 	Exit;
 }

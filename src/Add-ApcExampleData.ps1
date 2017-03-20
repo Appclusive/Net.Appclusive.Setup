@@ -33,7 +33,7 @@ if(!(Test-Path($AppConfig) -PathType Leaf))
 }
 
 $rootAclId = 1;
-$buildModelWorkflowDefinitionId = 1;
+$initialiseModelWorkflowDefinitionId = 1;
 
 [xml] $xmlConfig = Get-Content -Raw $AppConfig;
 $connectionStringEntry = $xmlConfig.Configuration.ConnectionStrings.Add |? name -eq $ConnectionStringKey;
@@ -687,7 +687,7 @@ $catalogueItemTable = 'CatalogueItem';
 
 if (EntityNotExisting -Table $blueprpintTable -Name 'Shape')
 {
-	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Shape', 'A Shape', $rootAclId, $shapeModelId, $buildModelWorkflowDefinitionId;
+	$query = $sqlCmdTextBlueprintInsertTemplate -f $database, $Schema, 'Shape', 'A Shape', $rootAclId, $shapeModelId, $initialiseModelWorkflowDefinitionId;
 	InsertRow -Query $query;
 }
 $blueprintId = GetIdOfEntityByName -Table $blueprpintTable -Name 'Shape';
