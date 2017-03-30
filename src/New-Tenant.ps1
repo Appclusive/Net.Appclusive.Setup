@@ -20,7 +20,7 @@ PARAM
 	[Parameter(Mandatory = $true, Position = 3)]
 	[String] $Namespace
 	,
-	[Parameter(Mandatory = $false, Position = 3)]
+	[Parameter(Mandatory = $false, Position = 4)]
 	[Guid] $ParentId = [guid]::Parse('11111111-1111-1111-1111-111111111111')
 	,
 	[Parameter(Mandatory = $false)]
