@@ -1,3 +1,4 @@
+#Requires -Modules @{ ModuleName = 'Net.Appclusive.Net.Client'; ModuleVersion = "4.0.0" }
 [CmdletBinding(
     SupportsShouldProcess = $true
 	,
