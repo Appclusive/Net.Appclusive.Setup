@@ -41,17 +41,20 @@ trap { Log-Exception $_; break; }
 $datBegin = [datetime]::Now;
 Log-Debug -fn $fn -msg ("CALL. Name '{0}'" -f $Name) -fac 1;
 
-$svc = Enter-Apc;
+$svc = Enter-ApcServer -UseModuleContext;
 Contract-Requires ($svc.Core -is [Net.Appclusive.Api.Core.Core]);
 Contract-Requires ($svc.Diagnostics -is [Net.Appclusive.Api.Diagnostics.Diagnostics]);
 
 # 1. Check if tenant name already exists
-$tenantNameInUse = $svc.Core.Tenants.AddQueryOption('$filter', ("Name eq '{0}'" -f $Name)) | Select;
-Contract-Assert ($null -eq $tenantNameInUse);
+$tenant = Get-ApcTenant -Name $Name;
+# DFTODO - fix null check as $tenant is not null
+Contract-Assert ($null -eq $tenant, "Tenant with specified name already exists.");
 
 # 2. Check if combination of MappedId and MappedType already exists
-$tenantAlreadyMapped = $svc.Core.Tenants.AddQueryOption('$filter', ("(MappedId eq '{0}') and MappedType eq '{1}'" -f $MappedId, $MappedType)) | Select;
-Contract-Assert ($null -eq $tenantAlreadyMapped);
+$filterQuery = "(MappedId eq '{0}') and MappedType eq '{1}'" -f $MappedId, $MappedType;
+$tenant = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($svc.Core.Users, $filterQuery);
+# DFTODO - fix null check as $tenant is not null
+Contract-Assert ($null -eq $tenant, "Mapping (MappedId/MappedType) already in use.");
 
 # 3. Create tenant
 if($TenantDescription -eq '')
@@ -61,9 +64,9 @@ if($TenantDescription -eq '')
 
 try {
 
-	# DFTODO - Create tenant
+	# DFTODO - Create tenant (separate function!!!)
 
-	# DFTODO - Create tenant administrator user
+	# DFTODO - Create tenant administrator user (separate function!!!)
 	# $user = New-Object Net.Appclusive.Api.Core.User;
 	# $user.MappedId = "{0} Admin" -f $Name;
 	# $user.MappedType = 'Integrated';
@@ -79,7 +82,7 @@ try {
 	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetTenant", @{EntityId = $adminUserId; EntitySet = "Net.Appclusive.Core.OdataServices.Core.User"; TenantId = $tenant.Id});
 	# Write-Host -ForegroundColor Green "Creating tenant administrator user SUCCEEDED.";
 			
-	# DFTODO - Create roles
+	# DFTODO - Create roles (separate function!!!)
 	# Write-Host "START Creating CloudAdmin role ...";
 	# $cloudAdminRole = New-Object Net.Appclusive.Api.Core.Role;
 	# $cloudAdminRole.RoleType = 3;
@@ -93,9 +96,9 @@ try {
 	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetCreatedBy", @{EntityId = $cloudAdminRole.Id; EntitySet = "Net.Appclusive.Core.OdataServices.Core.Role"; CreatedById = $adminUserId});
 	# Write-Host -ForegroundColor Green "Creating CloudAdmin role SUCCEEDED.";
 
-	# DFTODO - Create tenant root item
+	# DFTODO - Create tenant root item (separate function!!!)
 			
-	# DFTODO - Create tenant root ACL
+	# DFTODO - Create tenant root ACL (separate function!!!)
 	# Write-Host "START Creating root ACL ...";
 	# $acl = New-Object Net.Appclusive.Api.Core.Acl;
 	# $acl.Name = "Root ACL [{0}]" -f $tenant.Id;
@@ -130,12 +133,12 @@ try {
 	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetCreatedBy", @{EntityId = $ace.Id; EntitySet = "Net.Appclusive.Core.OdataServices.Core.Ace"; CreatedById = $adminUserId});
 	# Write-Host -ForegroundColor Green "Creating ACE for CloudAdmin role SUCCEEDED.";
 
-	# DFTODO - Verify tenant onboarding by calling tenant information
+	# DFTODO - Verify tenant onboarding by calling tenant information (separate function!!!)
 	# $tenantInfo = $svc.Core.InvokeEntityActionWithSingleResult($tenant, "Information", [Net.Appclusive.Core.Managers.TenantManagerInformation], $null);
 	# Contract-Assert($tenantInfo.Id -eq $tenant.Id)
 	# Contract-Assert($null -ne $tenantInfo);
 
-	# DFTODO Create Customer and link to Tenant -or- link existing Customer
+	# DFTODO Create Customer and link to Tenant -or- link existing Customer (separate function!!!)
 }
 catch [System.Management.Automation.MethodInvocationException]
 {
