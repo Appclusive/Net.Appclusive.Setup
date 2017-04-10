@@ -47,14 +47,12 @@ Contract-Requires ($svc.Diagnostics -is [Net.Appclusive.Api.Diagnostics.Diagnost
 
 # 1. Check if tenant name already exists
 $tenant = Get-ApcTenant -Name $Name;
-# DFTODO - fix null check as $tenant is not null
-Contract-Assert ($null -eq $tenant, "Tenant with specified name already exists.");
+Contract-Assert (!$tenant) -Message "Tenant with specified name already exists.";
 
 # 2. Check if combination of MappedId and MappedType already exists
 $filterQuery = "(MappedId eq '{0}') and MappedType eq '{1}'" -f $MappedId, $MappedType;
-$tenant = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($svc.Core.Users, $filterQuery);
-# DFTODO - fix null check as $tenant is not null
-Contract-Assert ($null -eq $tenant, "Mapping (MappedId/MappedType) already in use.");
+$tenant = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($svc.Core.Users, $filterQuery) | Select;
+Contract-Assert (!$tenant) -Message "Mapping (MappedId/MappedType) already in use.";
 
 # 3. Create tenant
 if($TenantDescription -eq '')
