@@ -50,11 +50,11 @@ $svc = Enter-ApcServer -UseModuleContext;
 Contract-Requires ($svc.Core -is [Net.Appclusive.Api.Core.Core]);
 Contract-Requires ($svc.Diagnostics -is [Net.Appclusive.Api.Diagnostics.Diagnostics]);
 
-# 1. Check if tenant name already exists
+# check if tenant name already exists
 $tenant = Get-ApcTenant -Name $Name;
 Contract-Assert (!$tenant) -Message "Tenant with specified name already exists.";
 
-# 2. Check if combination of MappedId and MappedType already exists
+# check if combination of MappedId and MappedType already exists
 $filterQuery = "(MappedId eq '{0}') and MappedType eq '{1}'" -f $MappedId, $MappedType;
 $tenant = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($svc.Core.Tenants, $filterQuery) | Select;
 Contract-Assert (!$tenant) -Message "Mapping (MappedId/MappedType) already in use.";
@@ -352,7 +352,6 @@ try {
 	# DFTODO - change createdById!?
 	Write-Host -ForegroundColor Green "Creating ACE for TenantAdmin role SUCCEEDED.";
 
-	
 	# DFTODO - verify tenant onboarding by calling tenant information
 	# $tenantInfo = $svc.Core.InvokeEntityActionWithSingleResult($tenant, "Information", [Net.Appclusive.Core.Managers.TenantManagerInformation], $null);
 	# Contract-Assert($null -ne $tenantInfo);
