@@ -38,7 +38,7 @@ trap { Log-Exception $_; break; }
 
 # Default variables
 [string] $adminUserMappedType = 'Integrated';
-[string] $systemMailAddress = 'system@appclusive.net'
+[string] $systemMailAddress = 'system@appclusive.net';
 
 [string] $fn = $MyInvocation.MyCommand.Name;
 $dateBegin = [datetime]::Now;
@@ -56,10 +56,10 @@ Contract-Assert (!$tenant) -Message "Tenant with specified name already exists."
 
 # 2. Check if combination of MappedId and MappedType already exists
 $filterQuery = "(MappedId eq '{0}') and MappedType eq '{1}'" -f $MappedId, $MappedType;
-$tenant = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($svc.Core.Users, $filterQuery) | Select;
+$tenant = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($svc.Core.Tenants, $filterQuery) | Select;
 Contract-Assert (!$tenant) -Message "Mapping (MappedId/MappedType) already in use.";
 
-
+# Functions
 function New-Tenant
 {
 	PARAM
@@ -182,8 +182,8 @@ function New-Role
 	return $role;
 }
 
-try {
 
+try {
 	# create tenant
 	Write-Host "START Creating tenant ...";
 	$tenant = New-Tenant -Id $Id -MappedId $MappedId -Name $Name -Namespace $Namespace -ParentId $ParentId -Description $TenantDescription -MappedType $MappedType -Svc $svc;
