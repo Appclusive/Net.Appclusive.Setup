@@ -219,6 +219,93 @@ function New-ApcItem
 	return $item;
 }
 
+function New-ApcAcl
+{
+	PARAM
+	(
+		[Parameter(Mandatory = $true, Position = 0)]
+		[ValidateNotNullOrEmpty()]
+		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
+		[String] $Name
+		,
+		[Parameter(Mandatory = $true, Position = 1)]
+		[ValidateRange(1, [long]::MaxValue)]
+		[long] $ParentId
+		,
+		[Parameter(Mandatory = $false)]
+		[switch] $NoInheritance = $false
+		,
+		[Parameter(Mandatory = $false)]
+		[String] $Description = $Name
+		,
+		[Parameter(Mandatory = $false)]
+		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
+	)
+	
+	$acl = [Net.Appclusive.Public.Domain.Security.Acl]::new();
+	$acl.Name = $Name;
+	$acl.ParentId = $ParentId;
+	$acl.NoInheritance = $NoInheritance;
+	$acl.Description = $Description;
+	
+	$Svc.Core.AddToAcls($acl);
+	$response = $Svc.Core.SaveChanges();
+	Contract-Assert ($response.StatusCode -eq 201);
+	
+	return $acl;
+}
+
+function New-ApcAce
+{
+	PARAM
+	(
+		[Parameter(Mandatory = $true, Position = 0)]
+		[ValidateRange(1, [long]::MaxValue)]
+		[long] $AclId
+		,
+		[Parameter(Mandatory = $true, Position = 1)]
+		[ValidateNotNullOrEmpty()]
+		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
+		[String] $Name
+		,
+		[Parameter(Mandatory = $true, Position = 2)]
+		[ValidateSet('Audit', 'Alarm', 'Deny', 'Allow', 'Ingress', 'Egress')]
+		[string] $Type
+		,
+		[Parameter(Mandatory = $true, Position = 3)]
+		[ValidateRange(1, [long]::MaxValue)]
+		[long] $PermissionId
+		,
+		[Parameter(Mandatory = $false)]
+		[ValidateRange(1, [long]::MaxValue)]
+		[long] $RoleId
+		,
+		[Parameter(Mandatory = $false)]
+		[ValidateRange(1, [long]::MaxValue)]
+		[long] $UserId
+		,
+		[Parameter(Mandatory = $false)]
+		[String] $Description = $Name
+		,
+		[Parameter(Mandatory = $false)]
+		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
+	)
+	
+	$ace = [Net.Appclusive.Public.Domain.Security.Ace]::new();
+	$ace.AclId = $AclId;
+	$ace.Name = $Name;
+	$ace.Type = $Type;
+	$ace.PermissionId = $PermissionId;
+	$ace.RoleId = $RoleId;
+	$ace.UserId = $UserId;
+	$ace.Description = $Description;
+	
+	$Svc.Core.AddToAces($ace);
+	$response = $Svc.Core.SaveChanges();
+	Contract-Assert ($response.StatusCode -eq 201);
+	
+	return $ace;
+}
 
 try {
 	# create tenant
@@ -247,50 +334,31 @@ try {
 	Write-Host "START Creating root item ...";
 	$itemName = '{0} root item' -f $Name;
 	$rootItem = New-ApcItem -Name $itemName -ParentId 1 -ModelId 1 -Svc $svc;
-	# DFTODO - set NoInheritance to true!
+	# DFTODO - set NoInheritance of Item to true
 	# DFTODO - change createdById!?
 	Write-Host -ForegroundColor Green "Creating root item SUCCEEDED.";
 
+	# create tenant root ACL
+	Write-Host "START Creating root ACL ...";
+	$aclName = "{0} root ACL" -f $Name;
+	$rootAcl = New-ApcAcl -Name $aclName -ParentId 1 -NoInheritance -Svc $svc;
+	# DFTODO - change createdById!?
+	Write-Host -ForegroundColor Green "Creating root ACL SUCCEEDED.";
+	
+	# create ACEs for tenant root ACL
+	Write-Host "START Creating ACE for TenantAdmin role ...";
+	$aceName = "{0} TenantAdmin ACE" -f $Name;
+	$ace = New-ApcAce -AclId $rootAcl.Id -Name $aceName -Type Allow -PermissionId 1 -RoleId $role.Id -Svc $svc;
+	# DFTODO - change createdById!?
+	Write-Host -ForegroundColor Green "Creating ACE for TenantAdmin role SUCCEEDED.";
 
-	# DFTODO - Create tenant root ACL (separate function!!!)
-	# Write-Host "START Creating root ACL ...";
-	# $acl = New-Object Net.Appclusive.Api.Core.Acl;
-	# $acl.Name = "Root ACL [{0}]" -f $tenant.Id;
-	# $acl.Description = $acl.Name;
-	# $acl.EntityId = $tenantRootNode.Id;
-	# $acl.EntityKindId = 1;
-	# $acl.NoInheritanceFromParent = $true;
-	# $svc.core.AddToAcls($acl);
-	# $response = $svc.Core.SaveChanges();
-	# Contract-Assert ($response.StatusCode -eq 201);
-
-	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetCreatedBy", @{EntityId = $acl.Id; EntitySet = "Net.Appclusive.Core.OdataServices.Core.Acl"; CreatedById = $adminUserId});
-	# Write-Host -ForegroundColor Green "Creating root ACL SUCCEEDED.";
-
-	# Create ACEs for tenant root ACL
-	# Write-Host "START Creating ACE for CloudAdmin role ...";
-	# $ace = New-Object Net.Appclusive.Api.Core.Ace;
-	# $ace.Name = "Root ACE";
-	# $ace.Description = $ace.Name;
-	# $ace.AclId = $acl.Id;
-	# $ace.Type = 2;
-	# $ace.PermissionId = 0;
-	# $ace.TrusteeId = $cloudAdminRole.Id;
-	# $ace.TrusteeType = 0;
-
-	# $svc.core.AddToAces($ace);
-	# $response = $svc.Core.SaveChanges();
-	# Contract-Assert ($response.StatusCode -eq 201);
-
-	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetCreatedBy", @{EntityId = $ace.Id; EntitySet = "Net.Appclusive.Core.OdataServices.Core.Ace"; CreatedById = $adminUserId});
-	# Write-Host -ForegroundColor Green "Creating ACE for CloudAdmin role SUCCEEDED.";
-
-	# DFTODO - Verify tenant onboarding by calling tenant information (separate function!!!)
+	
+	# DFTODO - verify tenant onboarding by calling tenant information
 	# $tenantInfo = $svc.Core.InvokeEntityActionWithSingleResult($tenant, "Information", [Net.Appclusive.Core.Managers.TenantManagerInformation], $null);
-	# Contract-Assert($tenantInfo.Id -eq $tenant.Id)
 	# Contract-Assert($null -ne $tenantInfo);
+	# Contract-Assert($tenantInfo.Id -eq $tenant.Id)
 
-	# DFTODO Create Customer and link to Tenant -or- link existing Customer (separate function!!!)
+	# DFTODO Create Customer and link to Tenant -or- link existing Customer
 }
 catch [System.Management.Automation.MethodInvocationException]
 {
