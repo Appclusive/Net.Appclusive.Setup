@@ -37,9 +37,14 @@ PARAM
 trap { Log-Exception $_; break; }
 
 # Default variables
+[string] $adminUserMappedType = 'Integrated';
+[string] $systemMailAddress = 'system@appclusive.net'
+
 [string] $fn = $MyInvocation.MyCommand.Name;
-$datBegin = [datetime]::Now;
-Log-Debug -fn $fn -msg ("CALL. Name '{0}'" -f $Name) -fac 1;
+$dateBegin = [datetime]::Now;
+
+
+Log-Debug -fn $fn -msg ("CALL. Started: '{0}'" -f $dateBegin) -fac 1;
 
 $svc = Enter-ApcServer -UseModuleContext;
 Contract-Requires ($svc.Core -is [Net.Appclusive.Api.Core.Core]);
@@ -54,29 +59,106 @@ $filterQuery = "(MappedId eq '{0}') and MappedType eq '{1}'" -f $MappedId, $Mapp
 $tenant = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($svc.Core.Users, $filterQuery) | Select;
 Contract-Assert (!$tenant) -Message "Mapping (MappedId/MappedType) already in use.";
 
-# 3. Create tenant
-if($TenantDescription -eq '')
+
+function New-Tenant
 {
-	$TenantDescription = $Name;
+	PARAM
+	(
+		[Parameter(Mandatory = $true, Position = 0)]
+		[Guid] $Id
+		,
+		[Parameter(Mandatory = $true, Position = 1)]
+		[ValidateNotNullOrEmpty()]
+		[String] $MappedId
+		,
+		[Parameter(Mandatory = $true, Position = 2)]
+		[ValidateNotNullOrEmpty()]
+		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
+		[String] $Name
+		,
+		[Parameter(Mandatory = $true, Position = 3)]
+		[String] $Namespace
+		,
+		[Parameter(Mandatory = $false, Position = 4)]
+		[Guid] $ParentId = [guid]::Parse('11111111-1111-1111-1111-111111111111')
+		,
+		[Parameter(Mandatory = $false)]
+		[String] $Description = $Name
+		,
+		[Parameter(Mandatory = $false)]
+		[String] $MappedType = 'External'
+		,
+		[Parameter(Mandatory = $false)]
+		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
+	)
+	
+	$tenant = [Net.Appclusive.Public.Domain.Identity.Tenant]::new();
+	$tenant.Id = $Id;
+	$tenant.MappedId = $MappedId;
+	$tenant.Name = $Name;
+	$tenant.Namespace = $Namespace;
+	$tenant.ParentId = $ParentId;
+	$tenant.Description = $Description;
+	$tenant.MappedType = $MappedType;
+	
+	$Svc.Core.AddToTenants($tenant);
+	$response = $Svc.Core.SaveChanges();
+	Contract-Assert ($response.StatusCode -eq 201);
+	
+	return $tenant;
+}
+
+function New-User
+{
+	PARAM
+	(
+		[Parameter(Mandatory = $true, Position = 0)]
+		[ValidateNotNullOrEmpty()]
+		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
+		[String] $Name
+		,
+		[Parameter(Mandatory = $true, Position = 1)]
+		[ValidateNotNullOrEmpty()]
+		[ValidateScript( { [mailaddress]::new($_) } ) ]
+		[String] $Mail
+		,
+		[Parameter(Mandatory = $true, Position = 2)]
+		[ValidateNotNullOrEmpty()]
+		[String] $MappedId
+		,
+		[Parameter(Mandatory = $true, Position = 3)]
+		[String] $MappedType
+		,
+		[Parameter(Mandatory = $false)]
+		[String] $Description = ''
+		,
+		[Parameter(Mandatory = $false)]
+		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
+	)
+	
+	$user = [Net.Appclusive.Public.Domain.Identity.User]::new();
+	$user.Name = $Name;
+	$user.Mail = $Mail;
+	$user.MappedId = $MappedId;
+	$user.MappedType = $MappedType;
+	$user.Description = $Description;
+	
+	$Svc.Core.AddToUsers($user);
+	$response = $Svc.Core.SaveChanges();
+	Contract-Assert ($response.StatusCode -eq 201);
+	
+	return $user;
 }
 
 try {
 
-	# DFTODO - Create tenant (separate function!!!)
+	$tenant = New-Tenant -Id $Id -MappedId $MappedId -Name $Name -Namespace $Namespace -ParentId $ParentId -Description $TenantDescription -MappedType $MappedType -Svc $svc;
 
-	# DFTODO - Create tenant administrator user (separate function!!!)
-	# $user = New-Object Net.Appclusive.Api.Core.User;
-	# $user.MappedId = "{0} Admin" -f $Name;
-	# $user.MappedType = 'Integrated';
-	# $user.Name = $user.MappedId;
-	# $user.Description = $user.MappedId;
-	# $user.Mail = 'system@appclusive.net'
-	# $svc.Core.AddToUsers($user);
+	$adminUserMappedId = '{0} Admin' -f $Name;
+	$tenantAdminUser = New-User -Name $adminUserMappedId -Mail $systemMailAddress -MappedId $adminUserMappedId -MappedType $adminUserMappedType -Description $adminUserMappedId -Svc $svc;
+	
 
-	# $response = $svc.Core.SaveChanges();
-	# Contract-Assert ($response.StatusCode -eq 201);
 
-	# $adminUserId = $user.Id;
 	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetTenant", @{EntityId = $adminUserId; EntitySet = "Net.Appclusive.Core.OdataServices.Core.User"; TenantId = $tenant.Id});
 	# Write-Host -ForegroundColor Green "Creating tenant administrator user SUCCEEDED.";
 			
