@@ -155,9 +155,8 @@ try {
 	$tenant = New-Tenant -Id $Id -MappedId $MappedId -Name $Name -Namespace $Namespace -ParentId $ParentId -Description $TenantDescription -MappedType $MappedType -Svc $svc;
 
 	$adminUserMappedId = '{0} Admin' -f $Name;
+	$svc.Core.TenantId = $Id;
 	$tenantAdminUser = New-User -Name $adminUserMappedId -Mail $systemMailAddress -MappedId $adminUserMappedId -MappedType $adminUserMappedType -Description $adminUserMappedId -Svc $svc;
-	
-
 
 	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetTenant", @{EntityId = $adminUserId; EntitySet = "Net.Appclusive.Core.OdataServices.Core.User"; TenantId = $tenant.Id});
 	# Write-Host -ForegroundColor Green "Creating tenant administrator user SUCCEEDED.";
