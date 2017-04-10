@@ -400,6 +400,53 @@ $sqlCmdTextRootAclInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[Acl] OFF;
 "@
 
+$sqlCmdTextBuiltInRoleInsert = @"
+    SET IDENTITY_INSERT [{0}].[{1}].[Role] ON;
+    INSERT INTO [{0}].[{1}].[Role]
+            (
+				[Id]
+				,
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+				,
+				[Type]
+            )
+        VALUES
+            (
+                {2}
+                ,
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                '{3}'
+                ,
+                '{3}'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+				,
+				1
+				,
+				3
+            )
+    SET IDENTITY_INSERT [{0}].[{1}].[Acl] OFF;
+"@
+
 $sqlCmdTextPermissionInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[Permission] ON;
     INSERT INTO [{0}].[{1}].[Permission]
@@ -653,6 +700,47 @@ catch
 	Write-Warning ($Error | Out-String);
 	Exit;
 }
+
+# Insertion of system tenant builtin roles
+$builtInRoles = @{
+	1 = 'UberAdmin';
+	2 = 'CreatorOwner';
+	3 = 'Everyone';
+	4 = 'ParentTenant'
+	5 = 'ChildTenants'
+	6 = 'TenantAdmin';
+	7 = 'TenantUser';
+	8 = 'TenantGuest';
+	9 = 'TenantEveryone';
+};
+foreach ($builtInRoleId in $builtInRoles.Keys)
+{
+	$builtInRoleName = $builtInRoles[$builtInRoleId];
+	$Error.Clear();
+	try {
+		Write-Host ("START Inserting role '{0}' [sqlCmdTextBuiltInRoleInsert] ..." -f $builtInRoleName);
+		$query = "SELECT Id FROM [$Schema].[Role] WHERE Id = {0}" -f $builtInRoleId;
+		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
+		if($result.Count -lt 1)
+		{
+			$query = $sqlCmdTextBuiltInRoleInsert -f $database, $Schema, $builtInRoleId, $builtInRoleName;
+			Write-Verbose $query;
+			$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
+			Write-Host -ForegroundColor Green ("Inserting role '{0}' SUCCEEDED." -f $builtInRoleName);
+		}
+		else
+		{
+			Write-Warning ("Role '{0}' already exists. Skipping ..." -f $builtInRoleName);
+		}
+	}
+	catch
+	{
+		Write-Warning ("Inserting role '{0}' FAILED" -f $builtInRoleName);
+		Write-Warning ($Error | Out-String);
+		Exit;
+	}
+}
+
 
 # Insertion of FullControl Permission
 $Error.Clear();
