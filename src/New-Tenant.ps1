@@ -60,7 +60,7 @@ $tenant = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($svc.Core.Tena
 Contract-Assert (!$tenant) -Message "Mapping (MappedId/MappedType) already in use.";
 
 # Functions
-function New-Tenant
+function New-ApcTenant
 {
 	PARAM
 	(
@@ -108,7 +108,7 @@ function New-Tenant
 	return $tenant;
 }
 
-function New-User
+function New-ApcUser
 {
 	PARAM
 	(
@@ -150,7 +150,7 @@ function New-User
 	return $user;
 }
 
-function New-Role
+function New-ApcRole
 {
 	PARAM
 	(
@@ -182,32 +182,76 @@ function New-Role
 	return $role;
 }
 
+function New-ApcItem
+{
+	PARAM
+	(
+		[Parameter(Mandatory = $true, Position = 0)]
+		[ValidateNotNullOrEmpty()]
+		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
+		[String] $Name
+		,
+		[Parameter(Mandatory = $true, Position = 1)]
+		[ValidateRange(1, [long]::MaxValue)]
+		[long] $ParentId
+		,
+		[Parameter(Mandatory = $true, Position = 2)]
+		[ValidateRange(1, [long]::MaxValue)]
+		[long] $ModelId
+		,
+		[Parameter(Mandatory = $false)]
+		[String] $Description = $Name
+		,
+		[Parameter(Mandatory = $false)]
+		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
+	)
+	
+	$item = [Net.Appclusive.Public.Domain.Inventory.Item]::new();
+	$item.Name = $Name;
+	$item.ParentId = $ParentId;
+	$item.ModelId = $ModelId;
+	$item.Description = $Description;
+	
+	$Svc.Core.AddToItems($item);
+	$response = $Svc.Core.SaveChanges();
+	Contract-Assert ($response.StatusCode -eq 201);
+	
+	return $item;
+}
+
 
 try {
 	# create tenant
 	Write-Host "START Creating tenant ...";
-	$tenant = New-Tenant -Id $Id -MappedId $MappedId -Name $Name -Namespace $Namespace -ParentId $ParentId -Description $TenantDescription -MappedType $MappedType -Svc $svc;
+	$tenant = New-ApcTenant -Id $Id -MappedId $MappedId -Name $Name -Namespace $Namespace -ParentId $ParentId -Description $TenantDescription -MappedType $MappedType -Svc $svc;
 	Write-Host -ForegroundColor Green "Creating tenant SUCCEEDED.";
 
 	# create tenant administrator user
 	Write-Host "START Creating tenant administrator user ...";
 	$adminUserMappedId = '{0} Admin' -f $Name;
 	$svc.Core.TenantId = $Id;
-	$tenantAdminUser = New-User -Name $adminUserMappedId -Mail $systemMailAddress -MappedId $adminUserMappedId -MappedType $adminUserMappedType -Svc $svc;
+	$tenantAdminUser = New-ApcUser -Name $adminUserMappedId -Mail $systemMailAddress -MappedId $adminUserMappedId -MappedType $adminUserMappedType -Svc $svc;
 	Write-Host -ForegroundColor Green "Creating tenant administrator user SUCCEEDED.";
 
+	# create tenant builtIn roles
 	$builtInRoleNames = @('TenantAdmin', 'TenantUser', 'TenantGuest', 'TenantEveryone');
-	
 	foreach ($builtInRoleName in $builtInRoleNames)
 	{
 		Write-Host ("START Creating {0} role ..." -f $builtInRoleName);
-		$role = New-Role -Name $builtInRoleName -Type Builtin -Svc $svc;
+		$role = New-ApcRole -Name $builtInRoleName -Type Builtin -Svc $svc;
 		# DFTODO - change createdById!?
 		Write-Host -ForegroundColor Green ("Creating {1} role SUCCEEDED." -f $builtInRoleName);
 	}
-	
-	# DFTODO - Create tenant root item (separate function!!!)
-			
+
+	# create tenant root item
+	Write-Host "START Creating root item ...";
+	$itemName = '{0} root item' -f $Name;
+	$rootItem = New-ApcItem -Name $itemName -ParentId 1 -ModelId 1 -Svc $svc;
+	# DFTODO - set NoInheritance to true!
+	# DFTODO - change createdById!?
+	Write-Host -ForegroundColor Green "Creating root item SUCCEEDED.";
+
+
 	# DFTODO - Create tenant root ACL (separate function!!!)
 	# Write-Host "START Creating root ACL ...";
 	# $acl = New-Object Net.Appclusive.Api.Core.Acl;
