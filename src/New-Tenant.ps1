@@ -25,7 +25,7 @@ PARAM
 	[Guid] $ParentId = [guid]::Parse('11111111-1111-1111-1111-111111111111')
 	,
 	[Parameter(Mandatory = $false)]
-	[String] $TenantDescription = ''
+	[String] $TenantDescription = $Name
 	,
 	[Parameter(Mandatory = $false)]
 	[String] $MappedType = 'External'
@@ -130,7 +130,7 @@ function New-User
 		[String] $MappedType
 		,
 		[Parameter(Mandatory = $false)]
-		[String] $Description = ''
+		[String] $Description = $Name
 		,
 		[Parameter(Mandatory = $false)]
 		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
@@ -150,31 +150,62 @@ function New-User
 	return $user;
 }
 
+function New-Role
+{
+	PARAM
+	(
+		[Parameter(Mandatory = $true, Position = 0)]
+		[ValidateNotNullOrEmpty()]
+		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
+		[String] $Name
+		,
+		[Parameter(Mandatory = $true, Position = 1)]
+		[ValidateSet('Default', 'Security', 'Distribution', 'Builtin', 'External')]
+		[String] $Type
+		,
+		[Parameter(Mandatory = $false)]
+		[String] $Description = $Name
+		,
+		[Parameter(Mandatory = $false)]
+		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
+	)
+	
+	$role = [Net.Appclusive.Public.Domain.Security.Role]::new();
+	$role.Name = $Name;
+	$role.Type = $Type;
+	$role.Description = $Description;
+	
+	$Svc.Core.AddToRoles($role);
+	$response = $Svc.Core.SaveChanges();
+	Contract-Assert ($response.StatusCode -eq 201);
+	
+	return $role;
+}
+
 try {
 
+	# create tenant
+	Write-Host "START Creating tenant ...";
 	$tenant = New-Tenant -Id $Id -MappedId $MappedId -Name $Name -Namespace $Namespace -ParentId $ParentId -Description $TenantDescription -MappedType $MappedType -Svc $svc;
+	Write-Host -ForegroundColor Green "Creating tenant SUCCEEDED.";
 
+	# create tenant administrator user
+	Write-Host "START Creating tenant administrator user ...";
 	$adminUserMappedId = '{0} Admin' -f $Name;
 	$svc.Core.TenantId = $Id;
-	$tenantAdminUser = New-User -Name $adminUserMappedId -Mail $systemMailAddress -MappedId $adminUserMappedId -MappedType $adminUserMappedType -Description $adminUserMappedId -Svc $svc;
+	$tenantAdminUser = New-User -Name $adminUserMappedId -Mail $systemMailAddress -MappedId $adminUserMappedId -MappedType $adminUserMappedType -Svc $svc;
+	Write-Host -ForegroundColor Green "Creating tenant administrator user SUCCEEDED.";
 
-	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetTenant", @{EntityId = $adminUserId; EntitySet = "Net.Appclusive.Core.OdataServices.Core.User"; TenantId = $tenant.Id});
-	# Write-Host -ForegroundColor Green "Creating tenant administrator user SUCCEEDED.";
-			
-	# DFTODO - Create roles (separate function!!!)
-	# Write-Host "START Creating CloudAdmin role ...";
-	# $cloudAdminRole = New-Object Net.Appclusive.Api.Core.Role;
-	# $cloudAdminRole.RoleType = 3;
-	# $cloudAdminRole.Name = 'CloudAdmin';
-	# $cloudAdminRole.Description = $cloudAdminRole.Name;
-	# $svc.core.AddToRoles($cloudAdminRole);
-	# $response = $svc.Core.SaveChanges();
-	# Contract-Assert ($response.StatusCode -eq 201);
-
-	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetTenant", @{EntityId = $cloudAdminRole.Id; EntitySet = "Net.Appclusive.Core.OdataServices.Core.Role"; TenantId = $tenant.Id});
-	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetCreatedBy", @{EntityId = $cloudAdminRole.Id; EntitySet = "Net.Appclusive.Core.OdataServices.Core.Role"; CreatedById = $adminUserId});
-	# Write-Host -ForegroundColor Green "Creating CloudAdmin role SUCCEEDED.";
-
+	$builtInRoleNames = @('TenantAdmin', 'TenantUser', 'TenantGuest', 'TenantEveryone');
+	
+	foreach ($builtInRoleName in $builtInRoleNames)
+	{
+		Write-Host ("START Creating {0} role ..." -f $builtInRoleName);
+		$role = New-Role -Name $builtInRoleName -Type Builtin -Svc $svc;
+		# DFTODO - change createdById!?
+		Write-Host -ForegroundColor Green ("Creating {1} role SUCCEEDED." -f $builtInRoleName);
+	}
+	
 	# DFTODO - Create tenant root item (separate function!!!)
 			
 	# DFTODO - Create tenant root ACL (separate function!!!)
@@ -189,7 +220,6 @@ try {
 	# $response = $svc.Core.SaveChanges();
 	# Contract-Assert ($response.StatusCode -eq 201);
 
-	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetTenant", @{EntityId = $acl.Id; EntitySet = "Net.Appclusive.Core.OdataServices.Core.Acl"; TenantId = $tenant.Id});
 	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetCreatedBy", @{EntityId = $acl.Id; EntitySet = "Net.Appclusive.Core.OdataServices.Core.Acl"; CreatedById = $adminUserId});
 	# Write-Host -ForegroundColor Green "Creating root ACL SUCCEEDED.";
 
@@ -208,7 +238,6 @@ try {
 	# $response = $svc.Core.SaveChanges();
 	# Contract-Assert ($response.StatusCode -eq 201);
 
-	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetTenant", @{EntityId = $ace.Id; EntitySet = "Net.Appclusive.Core.OdataServices.Core.Ace"; TenantId = $tenant.Id});
 	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetCreatedBy", @{EntityId = $ace.Id; EntitySet = "Net.Appclusive.Core.OdataServices.Core.Ace"; CreatedById = $adminUserId});
 	# Write-Host -ForegroundColor Green "Creating ACE for CloudAdmin role SUCCEEDED.";
 
