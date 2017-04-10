@@ -440,8 +440,6 @@ $sqlCmdTextBuiltInRoleInsert = @"
                 ,
                 GETDATE()
 				,
-				1
-				,
 				3
             )
     SET IDENTITY_INSERT [{0}].[{1}].[Acl] OFF;
