@@ -336,7 +336,7 @@ try {
 	{
 		Write-Host ("START Creating {0} role ..." -f $builtInRoleName);
 		$role = New-ApcRole -Name $builtInRoleName -Type Builtin -Svc $svc;
-		# DFTODO - change createdById!?
+		# DFTODO - change createdById?
 		Write-Host -ForegroundColor Green ("Creating {0} role SUCCEEDED." -f $builtInRoleName);
 	}
 
@@ -345,29 +345,27 @@ try {
 	$itemName = '{0} root item' -f $Name;
 	$rootItem = New-ApcItem -Name $itemName -ParentId 1 -ModelId 1 -Svc $svc;
 	# DFTODO - set NoInheritance of Item to true
-	# DFTODO - change createdById!?
+	# DFTODO - change createdById?
 	Write-Host -ForegroundColor Green "Creating root item SUCCEEDED.";
 
 	# create tenant root ACL
 	Write-Host "START Creating root ACL ...";
 	$aclName = "{0} root ACL" -f $Name;
 	$rootAcl = New-ApcAcl -Name $aclName -ParentId 1 -NoInheritance -Svc $svc;
-	# DFTODO - change createdById!?
+	# DFTODO - change createdById?
 	Write-Host -ForegroundColor Green "Creating root ACL SUCCEEDED.";
 	
 	# create ACEs for tenant root ACL
 	Write-Host "START Creating ACE for TenantAdmin role ...";
 	$aceName = "{0} TenantAdmin ACE" -f $Name;
 	$ace = New-ApcAce -AclId $rootAcl.Id -Name $aceName -Type Allow -PermissionId 1 -RoleId $role.Id -Svc $svc;
-	# DFTODO - change createdById!?
+	# DFTODO - change createdById?
 	Write-Host -ForegroundColor Green "Creating ACE for TenantAdmin role SUCCEEDED.";
 
 	# DFTODO - verify tenant onboarding by calling tenant information
-	# $tenantInfo = $svc.Core.InvokeEntityActionWithSingleResult($tenant, "Information", [Net.Appclusive.Core.Managers.TenantManagerInformation], $null);
+	# $tenantInfo = $svc.Core.InvokeEntityActionWithSingleResult($tenant, "Information", [Net.Appclusive.Public.Domain.Security.Identity.TenantInformation], $null);
 	# Contract-Assert($null -ne $tenantInfo);
 	# Contract-Assert($tenantInfo.Id -eq $tenant.Id)
-
-	# DFTODO Create Customer and link to Tenant -or- link existing Customer
 }
 catch [System.Management.Automation.MethodInvocationException]
 {
