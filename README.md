@@ -4,3 +4,5 @@
 [![Version](https://img.shields.io/nuget/v/Net.Appclusive.Setup.svg)](https://www.nuget.org/packages/Net.Appclusive.Setup/)
 
 Setup scripts for Net.Appclusive
+
+d-fens GmbH, General-Guisan-Strasse 6, CH-6300 Zug, Switzerland
