@@ -11,12 +11,12 @@ PARAM
 	,
 	[Parameter(Mandatory = $true, Position = 1)]
 	[ValidateNotNullOrEmpty()]
-	[String] $MappedId
+	[string] $MappedId
 	,
 	[Parameter(Mandatory = $true, Position = 2)]
 	[ValidateNotNullOrEmpty()]
 	[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
-	[String] $Name
+	[string] $Name
 	,
 	[Parameter(Mandatory = $true, Position = 3)]
 	[String] $Namespace
@@ -25,10 +25,10 @@ PARAM
 	[Guid] $ParentId = [guid]::Parse('11111111-1111-1111-1111-111111111111')
 	,
 	[Parameter(Mandatory = $false)]
-	[String] $TenantDescription = $Name
+	[string] $TenantDescription = $Name
 	,
 	[Parameter(Mandatory = $false)]
-	[String] $MappedType = 'External'
+	[string] $MappedType = 'External'
 	,
 	[Parameter(Mandatory = $false)]
 	[Int64] $CustomerId
@@ -69,24 +69,24 @@ function New-ApcTenant
 		,
 		[Parameter(Mandatory = $true, Position = 1)]
 		[ValidateNotNullOrEmpty()]
-		[String] $MappedId
+		[string] $MappedId
 		,
 		[Parameter(Mandatory = $true, Position = 2)]
 		[ValidateNotNullOrEmpty()]
 		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
-		[String] $Name
+		[string] $Name
 		,
 		[Parameter(Mandatory = $true, Position = 3)]
-		[String] $Namespace
+		[string] $Namespace
 		,
 		[Parameter(Mandatory = $false, Position = 4)]
 		[Guid] $ParentId = [guid]::Parse('11111111-1111-1111-1111-111111111111')
 		,
 		[Parameter(Mandatory = $false)]
-		[String] $Description = $Name
+		[string] $Description = $Name
 		,
 		[Parameter(Mandatory = $false)]
-		[String] $MappedType = 'External'
+		[string] $MappedType = 'External'
 		,
 		[Parameter(Mandatory = $false)]
 		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
@@ -115,22 +115,22 @@ function New-ApcUser
 		[Parameter(Mandatory = $true, Position = 0)]
 		[ValidateNotNullOrEmpty()]
 		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
-		[String] $Name
+		[string] $Name
 		,
 		[Parameter(Mandatory = $true, Position = 1)]
 		[ValidateNotNullOrEmpty()]
 		[ValidateScript( { [mailaddress]::new($_) } ) ]
-		[String] $Mail
+		[string] $Mail
 		,
 		[Parameter(Mandatory = $true, Position = 2)]
 		[ValidateNotNullOrEmpty()]
-		[String] $MappedId
+		[string] $MappedId
 		,
 		[Parameter(Mandatory = $true, Position = 3)]
-		[String] $MappedType
+		[string] $MappedType
 		,
 		[Parameter(Mandatory = $false)]
-		[String] $Description = $Name
+		[string] $Description = $Name
 		,
 		[Parameter(Mandatory = $false)]
 		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
@@ -157,14 +157,14 @@ function New-ApcRole
 		[Parameter(Mandatory = $true, Position = 0)]
 		[ValidateNotNullOrEmpty()]
 		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
-		[String] $Name
+		[string] $Name
 		,
 		[Parameter(Mandatory = $true, Position = 1)]
 		[ValidateSet('Default', 'Security', 'Distribution', 'Builtin', 'External')]
-		[String] $Type
+		[string] $Type
 		,
 		[Parameter(Mandatory = $false)]
-		[String] $Description = $Name
+		[string] $Description = $Name
 		,
 		[Parameter(Mandatory = $false)]
 		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
@@ -189,7 +189,7 @@ function New-ApcItem
 		[Parameter(Mandatory = $true, Position = 0)]
 		[ValidateNotNullOrEmpty()]
 		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
-		[String] $Name
+		[string] $Name
 		,
 		[Parameter(Mandatory = $true, Position = 1)]
 		[ValidateRange(1, [long]::MaxValue)]
@@ -200,7 +200,7 @@ function New-ApcItem
 		[long] $ModelId
 		,
 		[Parameter(Mandatory = $false)]
-		[String] $Description = $Name
+		[string] $Description = $Name
 		,
 		[Parameter(Mandatory = $false)]
 		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
@@ -226,7 +226,7 @@ function New-ApcAcl
 		[Parameter(Mandatory = $true, Position = 0)]
 		[ValidateNotNullOrEmpty()]
 		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
-		[String] $Name
+		[string] $Name
 		,
 		[Parameter(Mandatory = $true, Position = 1)]
 		[ValidateRange(1, [long]::MaxValue)]
@@ -236,7 +236,7 @@ function New-ApcAcl
 		[switch] $NoInheritance = $false
 		,
 		[Parameter(Mandatory = $false)]
-		[String] $Description = $Name
+		[string] $Description = $Name
 		,
 		[Parameter(Mandatory = $false)]
 		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
@@ -266,7 +266,7 @@ function New-ApcAce
 		[Parameter(Mandatory = $true, Position = 1)]
 		[ValidateNotNullOrEmpty()]
 		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
-		[String] $Name
+		[string] $Name
 		,
 		[Parameter(Mandatory = $true, Position = 2)]
 		[ValidateSet('Audit', 'Alarm', 'Deny', 'Allow', 'Ingress', 'Egress')]
@@ -285,7 +285,7 @@ function New-ApcAce
 		[long] $UserId
 		,
 		[Parameter(Mandatory = $false)]
-		[String] $Description = $Name
+		[string] $Description = $Name
 		,
 		[Parameter(Mandatory = $false)]
 		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
