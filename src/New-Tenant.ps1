@@ -333,7 +333,7 @@ try {
 		Write-Host ("START Creating {0} role ..." -f $builtInRoleName);
 		$role = New-ApcRole -Name $builtInRoleName -Type Builtin -Svc $svc;
 		# DFTODO - change createdById!?
-		Write-Host -ForegroundColor Green ("Creating {1} role SUCCEEDED." -f $builtInRoleName);
+		Write-Host -ForegroundColor Green ("Creating {0} role SUCCEEDED." -f $builtInRoleName);
 	}
 
 	# create tenant root item
