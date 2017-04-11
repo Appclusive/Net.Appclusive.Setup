@@ -351,55 +351,6 @@ $sqlCmdTextRootItemInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[Item] OFF;
 "@
 
-$sqlCmdTextRootAclInsert = @"
-    SET IDENTITY_INSERT [{0}].[{1}].[Acl] ON;
-    INSERT INTO [{0}].[{1}].[Acl]
-            (
-				[Id]
-				,
-				[Tid]
-				,
-				[Name]
-				,
-				[Description]
-				,
-				[CreatedById]
-				,
-				[ModifiedById]
-				,
-				[Created]
-				,
-				[Modified]
-				,
-				[ParentId]
-				,
-				[NoInheritance]
-            )
-        VALUES
-            (
-                1
-                ,
-                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
-                ,
-                'System root acl'
-                ,
-                'This is the System root acl'
-                ,
-                1
-                ,
-                1
-                ,
-                GETDATE()
-                ,
-                GETDATE()
-				,
-				1
-				,
-				'true'
-            )
-    SET IDENTITY_INSERT [{0}].[{1}].[Acl] OFF;
-"@
-
 $sqlCmdTextBuiltInRoleInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[Role] ON;
     INSERT INTO [{0}].[{1}].[Role]
@@ -488,6 +439,55 @@ $sqlCmdTextPermissionInsert = @"
 				0
             )
     SET IDENTITY_INSERT [{0}].[{1}].[Permission] OFF;
+"@
+
+$sqlCmdTextRootAclInsert = @"
+    SET IDENTITY_INSERT [{0}].[{1}].[Acl] ON;
+    INSERT INTO [{0}].[{1}].[Acl]
+            (
+				[Id]
+				,
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+				,
+				[ParentId]
+				,
+				[NoInheritance]
+            )
+        VALUES
+            (
+                1
+                ,
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                'System root acl'
+                ,
+                'This is the System root acl'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+				,
+				1
+				,
+				'true'
+            )
+    SET IDENTITY_INSERT [{0}].[{1}].[Acl] OFF;
 "@
 
 $sqlCmdTextInitialiseModelWorkflowDefinitionInsert = @"
@@ -675,30 +675,6 @@ catch
 }
 
 
-# Insertion of root ACL
-$Error.Clear();
-try {
-	Write-Host "START Inserting root acl [sqlCmdTextRootAclInsert] ...";
-	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Acl] WHERE Id = 1" -As Default;
-	if($result.Count -lt 1)
-	{
-		$query = $sqlCmdTextRootAclInsert -f $database, $Schema;
-		Write-Verbose $query;
-		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
-		Write-Host -ForegroundColor Green "Inserting root acl SUCCEEDED.";
-	}
-	else
-	{
-		Write-Warning "Root acl already exists. Skipping ...";
-	}
-}
-catch
-{
-	Write-Warning "Inserting root acl FAILED";
-	Write-Warning ($Error | Out-String);
-	Exit;
-}
-
 # Insertion of system tenant builtin roles
 $builtInRoles = @{
 	1 = 'UberAdmin';
@@ -760,6 +736,31 @@ try {
 catch
 {
 	Write-Warning "Inserting FullControl permission FAILED";
+	Write-Warning ($Error | Out-String);
+	Exit;
+}
+
+
+# Insertion of root Acl
+$Error.Clear();
+try {
+	Write-Host "START Inserting root acl [sqlCmdTextRootAclInsert] ...";
+	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Acl] WHERE Id = 1" -As Default;
+	if($result.Count -lt 1)
+	{
+		$query = $sqlCmdTextRootAclInsert -f $database, $Schema;
+		Write-Verbose $query;
+		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
+		Write-Host -ForegroundColor Green "Inserting root acl SUCCEEDED.";
+	}
+	else
+	{
+		Write-Warning "Root acl already exists. Skipping ...";
+	}
+}
+catch
+{
+	Write-Warning "Inserting root acl FAILED";
 	Write-Warning ($Error | Out-String);
 	Exit;
 }
