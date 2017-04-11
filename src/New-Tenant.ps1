@@ -31,7 +31,7 @@ PARAM
 	[string] $MappedType = 'External'
 	,
 	[Parameter(Mandatory = $false)]
-	[Int64] $CustomerId
+	[Int64] $CustomerId = 0
 )
 
 trap { Log-Exception $_; break; }
@@ -89,6 +89,9 @@ function New-ApcTenant
 		[string] $MappedType = 'External'
 		,
 		[Parameter(Mandatory = $false)]
+		[Int64] $CustomerId = 0
+		,
+		[Parameter(Mandatory = $false)]
 		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
 	)
 	
@@ -100,6 +103,7 @@ function New-ApcTenant
 	$tenant.ParentId = $ParentId;
 	$tenant.Description = $Description;
 	$tenant.MappedType = $MappedType;
+	$tenant.CustomerId = $CustomerId;
 	
 	$Svc.Core.AddToTenants($tenant);
 	$response = $Svc.Core.SaveChanges();
