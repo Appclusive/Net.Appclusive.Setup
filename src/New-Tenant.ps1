@@ -2,7 +2,7 @@
 [CmdletBinding(
     SupportsShouldProcess = $true
 	,
-	HelpURI = 'http://docs.appclusive.net/en/latest/Installation/Onboarding/'
+	HelpURI = 'http://docs.appclusive.net/en/develop/Installation/Onboarding/#tenant-onboarding'
 )]
 PARAM
 (
