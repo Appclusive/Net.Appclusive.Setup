@@ -490,6 +490,67 @@ $sqlCmdTextRootAclInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[Acl] OFF;
 "@
 
+$sqlCmdTextFullControlAceForUberAdminRoleAndSystemUserInsert = @"
+    SET IDENTITY_INSERT [{0}].[{1}].[Ace] ON;
+    INSERT INTO [{0}].[{1}].[Ace]
+            (
+				[Id]
+				,
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+				,
+				[AclId]
+				,
+				[PermissionId]
+				,
+				[RoleId]
+				,
+				[UserId]
+				,
+				[Type]
+            )
+        VALUES
+            (
+                1
+                ,
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                'FullControl ace'
+                ,
+                'FullControl ace'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+				,
+				{2}
+				,
+				1
+				,
+				1
+				,
+				1
+				,
+				4
+            )
+    SET IDENTITY_INSERT [{0}].[{1}].[Ace] OFF;
+"@
+
 $sqlCmdTextInitialiseModelWorkflowDefinitionInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[WorkflowDefinition] ON;
     INSERT INTO [{0}].[{1}].[WorkflowDefinition]
@@ -761,6 +822,32 @@ try {
 catch
 {
 	Write-Warning "Inserting root acl FAILED";
+	Write-Warning ($Error | Out-String);
+	Exit;
+}
+
+
+# Insertion of FullControl Ace for UberAdmin role and SYSTEM user
+$Error.Clear();
+try {
+	Write-Host "START Inserting FullControl ace for UberAdmin role and SYSTEM user [sqlCmdTextFullControlAceForUberAdminRoleAndSystemUserInsert] ...";
+	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Ace] WHERE Id = 1" -As Default;
+	if($result.Count -lt 1)
+	{
+		$rootAclId = 1;
+		$query = $sqlCmdTextFullControlAceForUberAdminRoleAndSystemUserInsert -f $database, $Schema, $rootAclId;
+		Write-Verbose $query;
+		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
+		Write-Host -ForegroundColor Green "Inserting FullControl ace for UberAdmin role and SYSTEM user SUCCEEDED.";
+	}
+	else
+	{
+		Write-Warning "FullControl ace for UberAdmin role and SYSTEM user already exists. Skipping ...";
+	}
+}
+catch
+{
+	Write-Warning "Inserting FullControl ace for UberAdmin role and SYSTEM user FAILED";
 	Write-Warning ($Error | Out-String);
 	Exit;
 }
