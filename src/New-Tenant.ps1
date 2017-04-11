@@ -296,8 +296,14 @@ function New-ApcAce
 	$ace.Name = $Name;
 	$ace.Type = $Type;
 	$ace.PermissionId = $PermissionId;
-	$ace.RoleId = $RoleId;
-	$ace.UserId = $UserId;
+	if ($RoleId -gt 0)
+	{
+		$ace.RoleId = $RoleId;
+	}
+	if ($UserId -gt 0)
+	{
+		$ace.UserId = $UserId;
+	}
 	$ace.Description = $Description;
 	
 	$Svc.Core.AddToAces($ace);
