@@ -7,6 +7,7 @@
 	,
 	HelpURI = 'http://docs.appclusive.net/en/latest/Installation/Setup/#initialise-database'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "")]
 PARAM
 (
 	[Parameter(Mandatory = $true, Position = 0)]

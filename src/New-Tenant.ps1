@@ -1,9 +1,11 @@
 #Requires -Modules @{ ModuleName = 'Net.Appclusive.PS.Client'; ModuleVersion = "4.0.0" }
+
 [CmdletBinding(
     SupportsShouldProcess = $true
 	,
 	HelpURI = 'http://docs.appclusive.net/en/latest/Installation/Onboarding/#tenant-onboarding'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "")]
 PARAM
 (
 	[Parameter(Mandatory = $true, Position = 0)]
@@ -62,6 +64,7 @@ Contract-Assert (!$tenant) -Message "Mapping (MappedId/MappedType) already in us
 # Functions
 function New-ApcTenant
 {
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 	PARAM
 	(
 		[Parameter(Mandatory = $true, Position = 0)]
@@ -114,6 +117,7 @@ function New-ApcTenant
 
 function New-ApcUser
 {
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 	PARAM
 	(
 		[Parameter(Mandatory = $true, Position = 0)]
@@ -156,6 +160,7 @@ function New-ApcUser
 
 function New-ApcRole
 {
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 	PARAM
 	(
 		[Parameter(Mandatory = $true, Position = 0)]
@@ -188,6 +193,7 @@ function New-ApcRole
 
 function New-ApcItem
 {
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 	PARAM
 	(
 		[Parameter(Mandatory = $true, Position = 0)]
@@ -225,6 +231,7 @@ function New-ApcItem
 
 function New-ApcAcl
 {
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 	PARAM
 	(
 		[Parameter(Mandatory = $true, Position = 0)]
@@ -261,6 +268,7 @@ function New-ApcAcl
 
 function New-ApcAce
 {
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 	PARAM
 	(
 		[Parameter(Mandatory = $true, Position = 0)]
