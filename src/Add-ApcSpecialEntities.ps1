@@ -5,8 +5,9 @@
 	,
     ConfirmImpact = 'Medium'
 	,
-	HelpURI = 'http://docs.appclusive.net/en/latest/Installation/Setup/'
+	HelpURI = 'http://docs.appclusive.net/en/latest/Installation/Setup/#initialise-database'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "")]
 PARAM
 (
 	[Parameter(Mandatory = $true, Position = 0)]
@@ -351,6 +352,96 @@ $sqlCmdTextRootItemInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[Item] OFF;
 "@
 
+$sqlCmdTextBuiltInRoleInsert = @"
+    SET IDENTITY_INSERT [{0}].[{1}].[Role] ON;
+    INSERT INTO [{0}].[{1}].[Role]
+            (
+				[Id]
+				,
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+				,
+				[Type]
+            )
+        VALUES
+            (
+                {2}
+                ,
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                '{3}'
+                ,
+                '{3}'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+				,
+				3
+            )
+    SET IDENTITY_INSERT [{0}].[{1}].[Acl] OFF;
+"@
+
+$sqlCmdTextPermissionInsert = @"
+    SET IDENTITY_INSERT [{0}].[{1}].[Permission] ON;
+    INSERT INTO [{0}].[{1}].[Permission]
+            (
+				[Id]
+				,
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+				,
+				[Type]
+            )
+        VALUES
+            (
+                {2}
+                ,
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                '{3}'
+                ,
+                '{3} permission'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+				,
+				0
+            )
+    SET IDENTITY_INSERT [{0}].[{1}].[Permission] OFF;
+"@
+
 $sqlCmdTextRootAclInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[Acl] ON;
     INSERT INTO [{0}].[{1}].[Acl]
@@ -400,9 +491,9 @@ $sqlCmdTextRootAclInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[Acl] OFF;
 "@
 
-$sqlCmdTextPermissionInsert = @"
-    SET IDENTITY_INSERT [{0}].[{1}].[Permission] ON;
-    INSERT INTO [{0}].[{1}].[Permission]
+$sqlCmdTextFullControlAceForUberAdminRoleAndSystemUserInsert = @"
+    SET IDENTITY_INSERT [{0}].[{1}].[Ace] ON;
+    INSERT INTO [{0}].[{1}].[Ace]
             (
 				[Id]
 				,
@@ -420,17 +511,25 @@ $sqlCmdTextPermissionInsert = @"
 				,
 				[Modified]
 				,
+				[AclId]
+				,
+				[PermissionId]
+				,
+				[RoleId]
+				,
+				[UserId]
+				,
 				[Type]
             )
         VALUES
             (
-                {2}
+                1
                 ,
                 CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
                 ,
-                '{3}'
+                'FullControl ace'
                 ,
-                '{3} permission'
+                'FullControl ace'
                 ,
                 1
                 ,
@@ -440,9 +539,17 @@ $sqlCmdTextPermissionInsert = @"
                 ,
                 GETDATE()
 				,
-				0
+				{2}
+				,
+				1
+				,
+				1
+				,
+				1
+				,
+				4
             )
-    SET IDENTITY_INSERT [{0}].[{1}].[Permission] OFF;
+    SET IDENTITY_INSERT [{0}].[{1}].[Ace] OFF;
 "@
 
 $sqlCmdTextInitialiseModelWorkflowDefinitionInsert = @"
@@ -504,6 +611,7 @@ catch
 	Exit;
 }
 
+
 # Insertion of system tenant
 $Error.Clear();
 try {
@@ -527,6 +635,7 @@ catch
 	Write-Warning ($Error | Out-String);
 	Exit;
 }
+
 
 # Insertion of SYSTEM user
 $Error.Clear();
@@ -552,6 +661,7 @@ catch
 	Exit;
 }
 
+
 # Insertion of root model
 $Error.Clear();
 try {
@@ -575,6 +685,7 @@ catch
 	Write-Warning ($Error | Out-String);
 	Exit;
 }
+
 
 # Insertion of root behaviour
 $Error.Clear();
@@ -600,6 +711,7 @@ catch
 	Exit;
 }
 
+
 # Insertion of root item
 $Error.Clear();
 try {
@@ -624,7 +736,74 @@ catch
 	Exit;
 }
 
-# Insertion of root ACL
+
+# Insertion of system tenant builtin roles
+$builtInRoles = @{
+	1 = 'UberAdmin';
+	2 = 'CreatorOwner';
+	3 = 'Everyone';
+	4 = 'ParentTenant'
+	5 = 'ChildTenants'
+	6 = 'TenantAdmin';
+	7 = 'TenantUser';
+	8 = 'TenantGuest';
+	9 = 'TenantEveryone';
+};
+foreach ($builtInRoleId in $builtInRoles.Keys)
+{
+	$builtInRoleName = $builtInRoles[$builtInRoleId];
+	$Error.Clear();
+	try {
+		Write-Host ("START Inserting role '{0}' [sqlCmdTextBuiltInRoleInsert] ..." -f $builtInRoleName);
+		$query = "SELECT Id FROM [$Schema].[Role] WHERE Id = {0}" -f $builtInRoleId;
+		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
+		if($result.Count -lt 1)
+		{
+			$query = $sqlCmdTextBuiltInRoleInsert -f $database, $Schema, $builtInRoleId, $builtInRoleName;
+			Write-Verbose $query;
+			$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
+			Write-Host -ForegroundColor Green ("Inserting role '{0}' SUCCEEDED." -f $builtInRoleName);
+		}
+		else
+		{
+			Write-Warning ("Role '{0}' already exists. Skipping ..." -f $builtInRoleName);
+		}
+	}
+	catch
+	{
+		Write-Warning ("Inserting role '{0}' FAILED" -f $builtInRoleName);
+		Write-Warning ($Error | Out-String);
+		Exit;
+	}
+}
+
+
+# Insertion of FullControl Permission
+$Error.Clear();
+try {
+	Write-Host "START Inserting FullControl permission [sqlCmdTextPermissionInsert] ...";
+	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Permission] WHERE Id = 1" -As Default;
+	if($result.Count -lt 1)
+	{
+		$query = $sqlCmdTextPermissionInsert -f $database, $Schema, 1, 'FullControl';
+		Write-Verbose $query;
+		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
+		Write-Host -ForegroundColor Green "Inserting FullControl permission SUCCEEDED.";
+	}
+	else
+	{
+		Write-Warning "FullControl permission already exists. Skipping ...";
+	}
+}
+catch
+{
+	Write-Warning "Inserting FullControl permission FAILED";
+	Write-Warning ($Error | Out-String);
+	Exit;
+}
+
+
+# Insertion of root Acl
 $Error.Clear();
 try {
 	Write-Host "START Inserting root acl [sqlCmdTextRootAclInsert] ...";
@@ -648,26 +827,28 @@ catch
 	Exit;
 }
 
-# Insertion of FullControl Permission
+
+# Insertion of FullControl Ace for UberAdmin role and SYSTEM user
 $Error.Clear();
 try {
-	Write-Host "START Inserting FullControl permission [sqlCmdTextPermissionInsert] ...";
-	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Permission] WHERE Id = 1" -As Default;
+	Write-Host "START Inserting FullControl ace for UberAdmin role and SYSTEM user [sqlCmdTextFullControlAceForUberAdminRoleAndSystemUserInsert] ...";
+	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[Ace] WHERE Id = 1" -As Default;
 	if($result.Count -lt 1)
 	{
-		$query = $sqlCmdTextPermissionInsert -f $database, $Schema, 1, 'FullControl';
+		$rootAclId = 1;
+		$query = $sqlCmdTextFullControlAceForUberAdminRoleAndSystemUserInsert -f $database, $Schema, $rootAclId;
 		Write-Verbose $query;
 		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
-		Write-Host -ForegroundColor Green "Inserting FullControl permission SUCCEEDED.";
+		Write-Host -ForegroundColor Green "Inserting FullControl ace for UberAdmin role and SYSTEM user SUCCEEDED.";
 	}
 	else
 	{
-		Write-Warning "FullControl permission already exists. Skipping ...";
+		Write-Warning "FullControl ace for UberAdmin role and SYSTEM user already exists. Skipping ...";
 	}
 }
 catch
 {
-	Write-Warning "Inserting FullControl permission FAILED";
+	Write-Warning "Inserting FullControl ace for UberAdmin role and SYSTEM user FAILED";
 	Write-Warning ($Error | Out-String);
 	Exit;
 }

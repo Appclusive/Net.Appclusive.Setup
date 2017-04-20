@@ -1,9 +1,11 @@
-#Requires -Modules @{ ModuleName = 'Net.Appclusive.Net.Client'; ModuleVersion = "4.0.0" }
+#Requires -Modules @{ ModuleName = 'Net.Appclusive.PS.Client'; ModuleVersion = "4.0.0" }
+
 [CmdletBinding(
     SupportsShouldProcess = $true
 	,
-	HelpURI = 'http://docs.appclusive.net/en/latest/Installation/Onboarding/'
+	HelpURI = 'http://docs.appclusive.net/en/latest/Installation/Onboarding/#tenant-onboarding'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "")]
 PARAM
 (
 	[Parameter(Mandatory = $true, Position = 0)]
@@ -11,12 +13,12 @@ PARAM
 	,
 	[Parameter(Mandatory = $true, Position = 1)]
 	[ValidateNotNullOrEmpty()]
-	[String] $MappedId
+	[string] $MappedId
 	,
 	[Parameter(Mandatory = $true, Position = 2)]
 	[ValidateNotNullOrEmpty()]
 	[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
-	[String] $Name
+	[string] $Name
 	,
 	[Parameter(Mandatory = $true, Position = 3)]
 	[String] $Namespace
@@ -25,117 +27,353 @@ PARAM
 	[Guid] $ParentId = [guid]::Parse('11111111-1111-1111-1111-111111111111')
 	,
 	[Parameter(Mandatory = $false)]
-	[String] $TenantDescription = ''
+	[string] $TenantDescription = $Name
 	,
 	[Parameter(Mandatory = $false)]
-	[String] $MappedType = 'External'
+	[string] $MappedType = 'External'
 	,
 	[Parameter(Mandatory = $false)]
-	[Int64] $CustomerId
+	[Int64] $CustomerId = 0
 )
 
 trap { Log-Exception $_; break; }
 
 # Default variables
-[string] $fn = $MyInvocation.MyCommand.Name;
-$datBegin = [datetime]::Now;
-Log-Debug -fn $fn -msg ("CALL. Name '{0}'" -f $Name) -fac 1;
+[string] $adminUserMappedType = 'Integrated';
+[string] $systemMailAddress = 'system@appclusive.net';
 
-$svc = Enter-Apc;
+[string] $fn = $MyInvocation.MyCommand.Name;
+$dateBegin = [datetime]::Now;
+
+
+Log-Debug -fn $fn -msg ("CALL. Started: '{0}'" -f $dateBegin) -fac 1;
+
+$svc = Enter-ApcServer -UseModuleContext;
 Contract-Requires ($svc.Core -is [Net.Appclusive.Api.Core.Core]);
 Contract-Requires ($svc.Diagnostics -is [Net.Appclusive.Api.Diagnostics.Diagnostics]);
 
-# 1. Check if tenant name already exists
-$tenantNameInUse = $svc.Core.Tenants.AddQueryOption('$filter', ("Name eq '{0}'" -f $Name)) | Select;
-Contract-Assert ($null -eq $tenantNameInUse);
+# check if tenant name already exists
+$tenant = Get-ApcTenant -Name $Name;
+Contract-Assert (!$tenant) -Message "Tenant with specified name already exists.";
 
-# 2. Check if combination of MappedId and MappedType already exists
-$tenantAlreadyMapped = $svc.Core.Tenants.AddQueryOption('$filter', ("(MappedId eq '{0}') and MappedType eq '{1}'" -f $MappedId, $MappedType)) | Select;
-Contract-Assert ($null -eq $tenantAlreadyMapped);
+# check if combination of MappedId and MappedType already exists
+$filterQuery = "(MappedId eq '{0}') and MappedType eq '{1}'" -f $MappedId, $MappedType;
+$tenant = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($svc.Core.Tenants, $filterQuery) | Select;
+Contract-Assert (!$tenant) -Message "Mapping (MappedId/MappedType) already in use.";
 
-# 3. Create tenant
-if($TenantDescription -eq '')
+# Functions
+function New-ApcTenant
 {
-	$TenantDescription = $Name;
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	PARAM
+	(
+		[Parameter(Mandatory = $true, Position = 0)]
+		[Guid] $Id
+		,
+		[Parameter(Mandatory = $true, Position = 1)]
+		[ValidateNotNullOrEmpty()]
+		[string] $MappedId
+		,
+		[Parameter(Mandatory = $true, Position = 2)]
+		[ValidateNotNullOrEmpty()]
+		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
+		[string] $Name
+		,
+		[Parameter(Mandatory = $true, Position = 3)]
+		[string] $Namespace
+		,
+		[Parameter(Mandatory = $false, Position = 4)]
+		[Guid] $ParentId = [guid]::Parse('11111111-1111-1111-1111-111111111111')
+		,
+		[Parameter(Mandatory = $false)]
+		[string] $Description = $Name
+		,
+		[Parameter(Mandatory = $false)]
+		[string] $MappedType = 'External'
+		,
+		[Parameter(Mandatory = $false)]
+		[Int64] $CustomerId = 0
+		,
+		[Parameter(Mandatory = $false)]
+		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
+	)
+	
+	$tenant = [Net.Appclusive.Public.Domain.Identity.Tenant]::new();
+	$tenant.Id = $Id;
+	$tenant.MappedId = $MappedId;
+	$tenant.Name = $Name;
+	$tenant.Namespace = $Namespace;
+	$tenant.ParentId = $ParentId;
+	$tenant.Description = $Description;
+	$tenant.MappedType = $MappedType;
+	$tenant.CustomerId = $CustomerId;
+	
+	$Svc.Core.AddToTenants($tenant);
+	$response = $Svc.Core.SaveChanges();
+	Contract-Assert ($response.StatusCode -eq 201);
+	
+	return $tenant;
+}
+
+function New-ApcUser
+{
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	PARAM
+	(
+		[Parameter(Mandatory = $true, Position = 0)]
+		[ValidateNotNullOrEmpty()]
+		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
+		[string] $Name
+		,
+		[Parameter(Mandatory = $true, Position = 1)]
+		[ValidateNotNullOrEmpty()]
+		[ValidateScript( { [mailaddress]::new($_) } ) ]
+		[string] $Mail
+		,
+		[Parameter(Mandatory = $true, Position = 2)]
+		[ValidateNotNullOrEmpty()]
+		[string] $MappedId
+		,
+		[Parameter(Mandatory = $true, Position = 3)]
+		[string] $MappedType
+		,
+		[Parameter(Mandatory = $false)]
+		[string] $Description = $Name
+		,
+		[Parameter(Mandatory = $false)]
+		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
+	)
+	
+	$user = [Net.Appclusive.Public.Domain.Identity.User]::new();
+	$user.Name = $Name;
+	$user.Mail = $Mail;
+	$user.MappedId = $MappedId;
+	$user.MappedType = $MappedType;
+	$user.Description = $Description;
+	
+	$Svc.Core.AddToUsers($user);
+	$response = $Svc.Core.SaveChanges();
+	Contract-Assert ($response.StatusCode -eq 201);
+	
+	return $user;
+}
+
+function New-ApcRole
+{
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	PARAM
+	(
+		[Parameter(Mandatory = $true, Position = 0)]
+		[ValidateNotNullOrEmpty()]
+		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
+		[string] $Name
+		,
+		[Parameter(Mandatory = $true, Position = 1)]
+		[ValidateSet('Default', 'Security', 'Distribution', 'Builtin', 'External')]
+		[string] $Type
+		,
+		[Parameter(Mandatory = $false)]
+		[string] $Description = $Name
+		,
+		[Parameter(Mandatory = $false)]
+		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
+	)
+	
+	$role = [Net.Appclusive.Public.Domain.Security.Role]::new();
+	$role.Name = $Name;
+	$role.Type = $Type;
+	$role.Description = $Description;
+	
+	$Svc.Core.AddToRoles($role);
+	$response = $Svc.Core.SaveChanges();
+	Contract-Assert ($response.StatusCode -eq 201);
+	
+	return $role;
+}
+
+function New-ApcItem
+{
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	PARAM
+	(
+		[Parameter(Mandatory = $true, Position = 0)]
+		[ValidateNotNullOrEmpty()]
+		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
+		[string] $Name
+		,
+		[Parameter(Mandatory = $true, Position = 1)]
+		[ValidateRange(1, [long]::MaxValue)]
+		[long] $ParentId
+		,
+		[Parameter(Mandatory = $true, Position = 2)]
+		[ValidateRange(1, [long]::MaxValue)]
+		[long] $ModelId
+		,
+		[Parameter(Mandatory = $false)]
+		[string] $Description = $Name
+		,
+		[Parameter(Mandatory = $false)]
+		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
+	)
+	
+	$item = [Net.Appclusive.Public.Domain.Inventory.Item]::new();
+	$item.Name = $Name;
+	$item.ParentId = $ParentId;
+	$item.ModelId = $ModelId;
+	$item.Description = $Description;
+	
+	$Svc.Core.AddToItems($item);
+	$response = $Svc.Core.SaveChanges();
+	Contract-Assert ($response.StatusCode -eq 201);
+	
+	return $item;
+}
+
+function New-ApcAcl
+{
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	PARAM
+	(
+		[Parameter(Mandatory = $true, Position = 0)]
+		[ValidateNotNullOrEmpty()]
+		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
+		[string] $Name
+		,
+		[Parameter(Mandatory = $true, Position = 1)]
+		[ValidateRange(1, [long]::MaxValue)]
+		[long] $ParentId
+		,
+		[Parameter(Mandatory = $false)]
+		[switch] $NoInheritance = $false
+		,
+		[Parameter(Mandatory = $false)]
+		[string] $Description = $Name
+		,
+		[Parameter(Mandatory = $false)]
+		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
+	)
+	
+	$acl = [Net.Appclusive.Public.Domain.Security.Acl]::new();
+	$acl.Name = $Name;
+	$acl.ParentId = $ParentId;
+	$acl.NoInheritance = $NoInheritance;
+	$acl.Description = $Description;
+	
+	$Svc.Core.AddToAcls($acl);
+	$response = $Svc.Core.SaveChanges();
+	Contract-Assert ($response.StatusCode -eq 201);
+	
+	return $acl;
+}
+
+function New-ApcAce
+{
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	PARAM
+	(
+		[Parameter(Mandatory = $true, Position = 0)]
+		[ValidateRange(1, [long]::MaxValue)]
+		[long] $AclId
+		,
+		[Parameter(Mandatory = $true, Position = 1)]
+		[ValidateNotNullOrEmpty()]
+		[ValidateScript( { Contract-Assert($_ -match '^[a-zA-Z][a-zA-Z0-9 _]+$'); return $true; } ) ]
+		[string] $Name
+		,
+		[Parameter(Mandatory = $true, Position = 2)]
+		[ValidateSet('Audit', 'Alarm', 'Deny', 'Allow', 'Ingress', 'Egress')]
+		[string] $Type
+		,
+		[Parameter(Mandatory = $true, Position = 3)]
+		[ValidateRange(1, [long]::MaxValue)]
+		[long] $PermissionId
+		,
+		[Parameter(Mandatory = $false)]
+		[ValidateRange(1, [long]::MaxValue)]
+		[long] $RoleId
+		,
+		[Parameter(Mandatory = $false)]
+		[ValidateRange(1, [long]::MaxValue)]
+		[long] $UserId
+		,
+		[Parameter(Mandatory = $false)]
+		[string] $Description = $Name
+		,
+		[Parameter(Mandatory = $false)]
+		[hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
+	)
+	
+	$ace = [Net.Appclusive.Public.Domain.Security.Ace]::new();
+	$ace.AclId = $AclId;
+	$ace.Name = $Name;
+	$ace.Type = $Type;
+	$ace.PermissionId = $PermissionId;
+	if ($RoleId -gt 0)
+	{
+		$ace.RoleId = $RoleId;
+	}
+	if ($UserId -gt 0)
+	{
+		$ace.UserId = $UserId;
+	}
+	$ace.Description = $Description;
+	
+	$Svc.Core.AddToAces($ace);
+	$response = $Svc.Core.SaveChanges();
+	Contract-Assert ($response.StatusCode -eq 201);
+	
+	return $ace;
 }
 
 try {
+	# create tenant
+	Write-Host "START Creating tenant ...";
+	$tenant = New-ApcTenant -Id $Id -MappedId $MappedId -Name $Name -Namespace $Namespace -ParentId $ParentId -Description $TenantDescription -MappedType $MappedType -Svc $svc;
+	Write-Host -ForegroundColor Green "Creating tenant SUCCEEDED.";
 
-	# DFTODO - Create tenant
+	# create tenant administrator user
+	Write-Host "START Creating tenant administrator user ...";
+	$adminUserMappedId = '{0} Admin' -f $Name;
+	$svc.Core.TenantId = $Id;
+	$tenantAdminUser = New-ApcUser -Name $adminUserMappedId -Mail $systemMailAddress -MappedId $adminUserMappedId -MappedType $adminUserMappedType -Svc $svc;
+	Write-Host -ForegroundColor Green "Creating tenant administrator user SUCCEEDED.";
 
-	# DFTODO - Create tenant administrator user
-	# $user = New-Object Net.Appclusive.Api.Core.User;
-	# $user.MappedId = "{0} Admin" -f $Name;
-	# $user.MappedType = 'Integrated';
-	# $user.Name = $user.MappedId;
-	# $user.Description = $user.MappedId;
-	# $user.Mail = 'system@appclusive.net'
-	# $svc.Core.AddToUsers($user);
+	# create tenant builtIn roles
+	$builtInRoleNames = @('TenantAdmin', 'TenantUser', 'TenantGuest', 'TenantEveryone');
+	foreach ($builtInRoleName in $builtInRoleNames)
+	{
+		Write-Host ("START Creating {0} role ..." -f $builtInRoleName);
+		$role = New-ApcRole -Name $builtInRoleName -Type Builtin -Svc $svc;
+		# DFTODO - change createdById?
+		Write-Host -ForegroundColor Green ("Creating {0} role SUCCEEDED." -f $builtInRoleName);
+	}
 
-	# $response = $svc.Core.SaveChanges();
-	# Contract-Assert ($response.StatusCode -eq 201);
+	# create tenant root item
+	Write-Host "START Creating root item ...";
+	$itemName = '{0} root item' -f $Name;
+	$rootItem = New-ApcItem -Name $itemName -ParentId 1 -ModelId 1 -Svc $svc;
+	# DFTODO - set NoInheritance of Item to true
+	# DFTODO - change createdById?
+	Write-Host -ForegroundColor Green "Creating root item SUCCEEDED.";
 
-	# $adminUserId = $user.Id;
-	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetTenant", @{EntityId = $adminUserId; EntitySet = "Net.Appclusive.Core.OdataServices.Core.User"; TenantId = $tenant.Id});
-	# Write-Host -ForegroundColor Green "Creating tenant administrator user SUCCEEDED.";
-			
-	# DFTODO - Create roles
-	# Write-Host "START Creating CloudAdmin role ...";
-	# $cloudAdminRole = New-Object Net.Appclusive.Api.Core.Role;
-	# $cloudAdminRole.RoleType = 3;
-	# $cloudAdminRole.Name = 'CloudAdmin';
-	# $cloudAdminRole.Description = $cloudAdminRole.Name;
-	# $svc.core.AddToRoles($cloudAdminRole);
-	# $response = $svc.Core.SaveChanges();
-	# Contract-Assert ($response.StatusCode -eq 201);
+	# create tenant root ACL
+	Write-Host "START Creating root ACL ...";
+	$aclName = "{0} root ACL" -f $Name;
+	$rootAcl = New-ApcAcl -Name $aclName -ParentId 1 -NoInheritance -Svc $svc;
+	# DFTODO - change createdById?
+	Write-Host -ForegroundColor Green "Creating root ACL SUCCEEDED.";
+	
+	# create ACEs for tenant root ACL
+	Write-Host "START Creating ACE for TenantAdmin role ...";
+	$aceName = "{0} TenantAdmin ACE" -f $Name;
+	$ace = New-ApcAce -AclId $rootAcl.Id -Name $aceName -Type Allow -PermissionId 1 -RoleId $role.Id -Svc $svc;
+	# DFTODO - change createdById?
+	Write-Host -ForegroundColor Green "Creating ACE for TenantAdmin role SUCCEEDED.";
 
-	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetTenant", @{EntityId = $cloudAdminRole.Id; EntitySet = "Net.Appclusive.Core.OdataServices.Core.Role"; TenantId = $tenant.Id});
-	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetCreatedBy", @{EntityId = $cloudAdminRole.Id; EntitySet = "Net.Appclusive.Core.OdataServices.Core.Role"; CreatedById = $adminUserId});
-	# Write-Host -ForegroundColor Green "Creating CloudAdmin role SUCCEEDED.";
-
-	# DFTODO - Create tenant root item
-			
-	# DFTODO - Create tenant root ACL
-	# Write-Host "START Creating root ACL ...";
-	# $acl = New-Object Net.Appclusive.Api.Core.Acl;
-	# $acl.Name = "Root ACL [{0}]" -f $tenant.Id;
-	# $acl.Description = $acl.Name;
-	# $acl.EntityId = $tenantRootNode.Id;
-	# $acl.EntityKindId = 1;
-	# $acl.NoInheritanceFromParent = $true;
-	# $svc.core.AddToAcls($acl);
-	# $response = $svc.Core.SaveChanges();
-	# Contract-Assert ($response.StatusCode -eq 201);
-
-	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetTenant", @{EntityId = $acl.Id; EntitySet = "Net.Appclusive.Core.OdataServices.Core.Acl"; TenantId = $tenant.Id});
-	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetCreatedBy", @{EntityId = $acl.Id; EntitySet = "Net.Appclusive.Core.OdataServices.Core.Acl"; CreatedById = $adminUserId});
-	# Write-Host -ForegroundColor Green "Creating root ACL SUCCEEDED.";
-
-	# Create ACEs for tenant root ACL
-	# Write-Host "START Creating ACE for CloudAdmin role ...";
-	# $ace = New-Object Net.Appclusive.Api.Core.Ace;
-	# $ace.Name = "Root ACE";
-	# $ace.Description = $ace.Name;
-	# $ace.AclId = $acl.Id;
-	# $ace.Type = 2;
-	# $ace.PermissionId = 0;
-	# $ace.TrusteeId = $cloudAdminRole.Id;
-	# $ace.TrusteeType = 0;
-
-	# $svc.core.AddToAces($ace);
-	# $response = $svc.Core.SaveChanges();
-	# Contract-Assert ($response.StatusCode -eq 201);
-
-	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetTenant", @{EntityId = $ace.Id; EntitySet = "Net.Appclusive.Core.OdataServices.Core.Ace"; TenantId = $tenant.Id});
-	# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetCreatedBy", @{EntityId = $ace.Id; EntitySet = "Net.Appclusive.Core.OdataServices.Core.Ace"; CreatedById = $adminUserId});
-	# Write-Host -ForegroundColor Green "Creating ACE for CloudAdmin role SUCCEEDED.";
-
-	# DFTODO - Verify tenant onboarding by calling tenant information
-	# $tenantInfo = $svc.Core.InvokeEntityActionWithSingleResult($tenant, "Information", [Net.Appclusive.Core.Managers.TenantManagerInformation], $null);
-	# Contract-Assert($tenantInfo.Id -eq $tenant.Id)
+	# DFTODO - verify tenant onboarding by calling tenant information
+	# $tenantInfo = $svc.Core.InvokeEntityActionWithSingleResult($tenant, "Information", [Net.Appclusive.Public.Domain.Security.Identity.TenantInformation], $null);
 	# Contract-Assert($null -ne $tenantInfo);
-
-	# DFTODO Create Customer and link to Tenant -or- link existing Customer
+	# Contract-Assert($tenantInfo.Id -eq $tenant.Id)
 }
 catch [System.Management.Automation.MethodInvocationException]
 {
