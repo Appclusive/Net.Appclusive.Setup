@@ -73,12 +73,10 @@ $result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders 
 # Create Order
 $requestUri = '{0}/{1}/{2}/Create' -f $AppclusiveApiBaseUri, $coreEndpoint, 'Orders';
 
-$createOrderDto = '{
-    "CartId":  ""
-}';
-
-$createOrderDto = $createOrderDto | ConvertFrom-Json;
+$createOrderDto = @{};
 $createOrderDto.CartId = $cartId;
+# DFTODO - adjust to tenant root item id (retrieved via TenantInformation)
+$createOrderDto.ParentItemId = "1";
 $createOrderDto = $createOrderDto | ConvertTo-Json;
 
 $result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $createOrderDto;
