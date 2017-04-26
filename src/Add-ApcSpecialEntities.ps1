@@ -442,6 +442,47 @@ $sqlCmdTextPermissionInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[Permission] OFF;
 "@
 
+$sqlCmdTextBuiltInRightInsert = @"
+    SET IDENTITY_INSERT [{0}].[{1}].[Right] ON;
+    INSERT INTO [{0}].[{1}].[Right]
+            (
+				[Id]
+				,
+				[Tid]
+				,
+				[Name]
+				,
+				[Description]
+				,
+				[CreatedById]
+				,
+				[ModifiedById]
+				,
+				[Created]
+				,
+				[Modified]
+            )
+        VALUES
+            (
+                {2}
+                ,
+                CONVERT(uniqueidentifier, '11111111-1111-1111-1111-111111111111')
+                ,
+                '{3}'
+                ,
+                '{3} right'
+                ,
+                1
+                ,
+                1
+                ,
+                GETDATE()
+                ,
+                GETDATE()
+            )
+    SET IDENTITY_INSERT [{0}].[{1}].[Right] OFF;
+"@
+
 $sqlCmdTextRootAclInsert = @"
     SET IDENTITY_INSERT [{0}].[{1}].[Acl] ON;
     INSERT INTO [{0}].[{1}].[Acl]
@@ -800,6 +841,43 @@ catch
 	Write-Warning "Inserting FullControl permission FAILED";
 	Write-Warning ($Error | Out-String);
 	Exit;
+}
+
+# Insertion of rights
+$rights = @{
+	1 = 'ACT_AS_PART_OF_THE_OPERATING_SYSTEM';
+	2 = 'TAKE_OWNERSHIP';
+	3 = 'GRANT_OWNERSHIP';
+	4 = 'IMPERSONATE';
+	5 = 'SECURITY_MANAGEMENT';
+	6 = 'GENERIC_READ';
+};
+foreach ($rightId in $rights.Keys)
+{
+	$rightName = $rights[$rightId];
+	$Error.Clear();
+	try {
+		Write-Host ("START Inserting right '{0}' [sqlCmdTextBuiltInRightInsert] ..." -f $rightName);
+		$query = "SELECT Id FROM [$Schema].[Right] WHERE Id = {0}" -f $rightId;
+		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
+		if($result.Count -lt 1)
+		{
+			$query = $sqlCmdTextBuiltInRightInsert -f $database, $Schema, $rightId, $rightName;
+			Write-Verbose $query;
+			$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
+			Write-Host -ForegroundColor Green ("Inserting right '{0}' SUCCEEDED." -f $rightName);
+		}
+		else
+		{
+			Write-Warning ("Right '{0}' already exists. Skipping ..." -f $rightName);
+		}
+	}
+	catch
+	{
+		Write-Warning ("Inserting right '{0}' FAILED" -f $rightName);
+		Write-Warning ($Error | Out-String);
+		Exit;
+	}
 }
 
 
