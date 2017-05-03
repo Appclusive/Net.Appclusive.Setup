@@ -673,12 +673,12 @@ $workflowDefinitionTable = 'WorkflowDefinition';
 
 $rectangleWorkflowXaml = [System.IO.File]::ReadAllText('C:\src\Net.Appclusive.Blueprints\src\Net.Appclusive.Workflows\RectangleBlueprint.xaml');
 
-if (EntityNotExisting -Table $workflowDefinitionTable -Name 'Rectangle workflow definition')
+if (EntityNotExisting -Table $workflowDefinitionTable -Name 'Rectangle')
 {
-	$query = $sqlCmdTextWorkflowDefinitionInsertTemplate -f $database, $Schema, 'Rectangle workflow definition', $rectangleWorkflowXaml;
+	$query = $sqlCmdTextWorkflowDefinitionInsertTemplate -f $database, $Schema, 'Rectangle', $rectangleWorkflowXaml;
 	InsertRow -Query $query;
 }
-$rectangleWorkflowDefinitionId = GetIdOfEntityByName -Table $workflowDefinitionTable -Name 'Rectangle workflow definition';
+$rectangleWorkflowDefinitionId = GetIdOfEntityByName -Table $workflowDefinitionTable -Name 'Rectangle';
 
 
 
