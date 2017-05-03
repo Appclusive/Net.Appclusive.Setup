@@ -1,3 +1,5 @@
+#Requires -Modules @{ ModuleName = 'Net.Appclusive.PS.Client'; ModuleVersion = "4.0.2" }
+
 [CmdletBinding(
     SupportsShouldProcess = $true
 	,
@@ -8,83 +10,75 @@
 PARAM
 (
 	[Parameter(Mandatory = $false)]
-	[ValidateNotNullOrEmpty()]
-	[String] $AppclusiveApiBaseUri = 'http://appclusive/api/'
+	[Hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
 )
 
-# Parameter validation
-$AppclusiveApiBaseUri = $AppclusiveApiBaseUri.TrimEnd('/');
 
-# global variables
-[string] $coreEndpoint = 'Core';
-[hashtable] $postHeaders = @{'Content-Type' = 'application/json'};
+# load Catalogue & CatalogueItem
+$filterQuery = "Name eq 'Example Catalogue'";
+$exampleCatalogue = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($Svc.Core.Catalogues, $filterQuery);
+Contract-Assert($exampleCatalogue);
+
+$filterQuery = "CatalogueId eq {0} and Name eq 'Rectangle'" -f $exampleCatalogue.Id;
+$rectangleCatalogueItem = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($Svc.Core.CatalogueItems, $filterQuery);
+Contract-Assert($rectangleCatalogueItem);
 
 
-# Load Catalogue & CatalogueItem
-$requestUri = '{0}/{1}/{2}?$filter=Name eq ''Example Catalogue''' -f $AppclusiveApiBaseUri, $coreEndpoint, 'Catalogues';
-$result = Invoke-RestMethod -Method Get -Uri $requestUri;
+# create Cart
+$cart = [Net.Appclusive.Public.Domain.Order.Cart]::new();
+$cart.Name = "MyCart";
+$cart.Description = $cart.Name;
+$Svc.Core.AddToCarts($cart);
+$result = $Svc.Core.SaveChanges();
 Contract-Assert($result);
-Contract-Assert($result.value);
-$exampleCatalogue = $result.value;
+Contract-Assert($result.StatusCode -eq 201);
 
-$requestUri = '{0}/{1}/{2}?$filter=CatalogueId eq {3} and Name eq ''Rectangle''' -f $AppclusiveApiBaseUri, $coreEndpoint, 'CatalogueItems', $exampleCatalogue.Id;
-$result = Invoke-RestMethod -Method Get -Uri $requestUri;
+
+# create CartItem
+$cartItem = [Net.Appclusive.Public.Domain.Order.CartItem]::new();
+$cartItem.Name = "Rectangle";
+$cartItem.Description = $cartItem.Name;
+$cartItem.CartId = $cart.Id;
+$cartItem.CatalogueItemId = $rectangleCatalogueItem.Id;
+
+$idValuePair1 = [Net.Appclusive.Public.Types.IdValuePair]::new();
+$idValuePair1.Id = 1;
+$idValuePair1.Value = "800.00";
+
+$idValuePair2 = [Net.Appclusive.Public.Types.IdValuePair]::new();
+$idValuePair2.Id = 2;
+$idValuePair2.Value = "42";
+
+$idValuePair3 = [Net.Appclusive.Public.Types.IdValuePair]::new();
+$idValuePair3.Id = 3;
+$idValuePair3.Value = "20";
+
+$idValuePair4 = [Net.Appclusive.Public.Types.IdValuePair]::new();
+$idValuePair4.Id = 4;
+$idValuePair4.Value = "40";
+
+$idValuePair5 = [Net.Appclusive.Public.Types.IdValuePair]::new();
+$idValuePair5.Id = 5;
+$idValuePair5.Value = "Arbitrary Name";
+
+$cartItem.Configuration.Add($idValuePair1);
+$cartItem.Configuration.Add($idValuePair2);
+$cartItem.Configuration.Add($idValuePair3);
+$cartItem.Configuration.Add($idValuePair4);
+$cartItem.Configuration.Add($idValuePair5);
+
+$Svc.Core.AddToCartItems($cartItem);
+$result = $Svc.Core.SaveChanges();
 Contract-Assert($result);
-Contract-Assert($result.value);
-$rectangleCatalogueItem = $result.value;
+Contract-Assert($result.StatusCode -eq 201);
 
 
-# Create Cart
-$requestUri = '{0}/{1}/{2}' -f $AppclusiveApiBaseUri, $coreEndpoint, 'Carts';
-$cart = '{
-    "Id":  "0",
-    "Name":  "MyCart",
-    "Description":  "MyCart"
-}';
-
-$result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $cart;
-Contract-Assert($result);
-Contract-Assert($result.Id);
-$cartId = $result.Id;
-
-
-# Create CartItem
-$requestUri = '{0}/{1}/{2}' -f $AppclusiveApiBaseUri, $coreEndpoint, 'CartItems';
-$cartItem = '{
-    "Id":  "0",
-    "Name":  "Rectangle",
-    "Description":  "Rectangle",
-	"CartId": "",
-	"CatalogueItemId" : "",
-	"Configuration": 
-		[
-			{"Id": "1", "Value":"800.00"},
-			{"Id": "2", "Value":"42"},
-			{"Id": "3", "Value":"20"},
-			{"Id": "4", "Value":"40"},
-			{"Id": "5", "Value":"Arbitrary Name"}
-		]
-}';
-$cartItem = $cartItem | ConvertFrom-Json;
-$cartItem.CartId = "$cartId";
-$cartItem.CatalogueItemId = $rectangleCatalogueItem.Id.ToString();
-$cartItem = $cartItem | ConvertTo-Json;
-
-$result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $cartItem;
-
-
-# Create Order
-$requestUri = '{0}/{1}/{2}/Create' -f $AppclusiveApiBaseUri, $coreEndpoint, 'Orders';
-
-$createOrderDto = '{
-    "CartId":  ""
-}';
-
-$createOrderDto = $createOrderDto | ConvertFrom-Json;
-$createOrderDto.CartId = $cartId;
-$createOrderDto = $createOrderDto | ConvertTo-Json;
-
-$result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $createOrderDto;
+# create Order
+$createOrderDto = @{};
+$createOrderDto.CartId = $cart.Id;
+# DFTODO - adjust to tenant root item id (retrieved via TenantInformation)
+$createOrderDto.ParentItemId = "1";
+$orderJob = $Svc.Core.InvokeEntitySetActionWithSingleResult("Orders", "Create", [Net.Appclusive.Public.Domain.Control.Job], $createOrderDto);
 
 
 #
