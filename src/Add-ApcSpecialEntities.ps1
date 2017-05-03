@@ -633,7 +633,7 @@ $sqlCmdTextInitialiseModelWorkflowDefinitionInsert = @"
                 ,
                 GETDATE()
 				,
-				''
+				'{3}'
             )
     SET IDENTITY_INSERT [{0}].[{1}].[WorkflowDefinition] OFF;
 "@
@@ -933,13 +933,15 @@ catch
 
 
 # Insertion of InitialiseModel WorkflowDefinition
+$simpleBlueprintWorkflowXaml = [System.IO.File]::ReadAllText('C:\src\Net.Appclusive.Blueprints\src\Net.Appclusive.Workflows\SimpleBlueprint.xaml');
+
 $Error.Clear();
 try {
 	Write-Host "START Inserting InitialiseModel workflow definition [sqlCmdTextInitialiseModelWorkflowDefinitionInsert] ...";
 	$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query "SELECT Id FROM [$Schema].[WorkflowDefinition] WHERE Id = 1" -As Default;
 	if($result.Count -lt 1)
 	{
-		$query = $sqlCmdTextInitialiseModelWorkflowDefinitionInsert -f $database, $Schema, 'InitialiseModel';
+		$query = $sqlCmdTextInitialiseModelWorkflowDefinitionInsert -f $database, $Schema, 'InitialiseModel', $simpleBlueprintWorkflowXaml;
 		Write-Verbose $query;
 		$result = Invoke-SqlCmd -ConnectionString $connectionString -IntegratedSecurity:$false -Query $query -As Default;
 		Write-Host -ForegroundColor Green "Inserting InitialiseModel workflow definition SUCCEEDED.";
