@@ -1,3 +1,5 @@
+#Requires -Modules @{ ModuleName = 'Net.Appclusive.PS.Client'; ModuleVersion = "4.0.2" }
+
 [CmdletBinding(
     SupportsShouldProcess = $true
 	,
@@ -8,78 +10,60 @@
 PARAM
 (
 	[Parameter(Mandatory = $false)]
-	[ValidateNotNullOrEmpty()]
-	[String] $AppclusiveApiBaseUri = 'http://appclusive/api/'
+	[Hashtable] $Svc = (Enter-ApcServer -UseModuleContext)
 )
 
-# Parameter validation
-$AppclusiveApiBaseUri = $AppclusiveApiBaseUri.TrimEnd('/');
 
-# global variables
-[string] $coreEndpoint = 'Core';
-[hashtable] $postHeaders = @{'Content-Type' = 'application/json'};
+# load Catalogue & CatalogueItem
+$filterQuery = "Name eq 'Example Catalogue'";
+$exampleCatalogue = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($Svc.Core.Catalogues, $filterQuery);
+Contract-Assert($exampleCatalogue);
+
+$filterQuery = "CatalogueId eq {0} and Name eq 'Shape'" -f $exampleCatalogue.Id;
+$shapeCatalogueItem = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($Svc.Core.CatalogueItems, $filterQuery);
+Contract-Assert($shapeCatalogueItem);
 
 
-# Load Catalogue & CatalogueItem
-$requestUri = '{0}/{1}/{2}?$filter=Name eq ''Example Catalogue''' -f $AppclusiveApiBaseUri, $coreEndpoint, 'Catalogues';
-$result = Invoke-RestMethod -Method Get -Uri $requestUri;
+# create Cart
+$cart = [Net.Appclusive.Public.Domain.Order.Cart]::new();
+$cart.Name = "MyCart";
+$cart.Description = $cart.Name;
+$Svc.Core.AddToCarts($cart);
+$result = $Svc.Core.SaveChanges();
 Contract-Assert($result);
-Contract-Assert($result.value);
-$exampleCatalogue = $result.value;
+Contract-Assert($result.StatusCode -eq 201);
 
-$requestUri = '{0}/{1}/{2}?$filter=CatalogueId eq {3} and Name eq ''Shape''' -f $AppclusiveApiBaseUri, $coreEndpoint, 'CatalogueItems', $exampleCatalogue.Id;
-$result = Invoke-RestMethod -Method Get -Uri $requestUri;
+
+# create CartItem
+$cartItem = [Net.Appclusive.Public.Domain.Order.CartItem]::new();
+$cartItem.Name = "Shape";
+$cartItem.Description = $cartItem.Name;
+$cartItem.CartId = $cart.Id;
+$cartItem.CatalogueItemId = $shapeCatalogueItem.Id;
+
+$idValuePair1 = [Net.Appclusive.Public.Types.IdValuePair]::new();
+$idValuePair1.Id = 1;
+$idValuePair1.Value = "1764.00";
+
+$idValuePair2 = [Net.Appclusive.Public.Types.IdValuePair]::new();
+$idValuePair2.Id = 2;
+$idValuePair2.Value = "42";
+
+$cartItem.Configuration.Add($idValuePair1);
+$cartItem.Configuration.Add($idValuePair2);
+
+$Svc.Core.AddToCartItems($cartItem);
+$result = $Svc.Core.SaveChanges();
 Contract-Assert($result);
-Contract-Assert($result.value);
-$shapeCatalogueItem = $result.value;
+Contract-Assert($result.StatusCode -eq 201);
 
 
-# Create Cart
-$requestUri = '{0}/{1}/{2}' -f $AppclusiveApiBaseUri, $coreEndpoint, 'Carts';
-$cart = '{
-    "Id":  "0",
-    "Name":  "MyCart",
-    "Description":  "MyCart"
-}';
-
-$result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $cart;
-Contract-Assert($result);
-Contract-Assert($result.Id);
-$cartId = $result.Id;
-
-
-# Create CartItem
-$requestUri = '{0}/{1}/{2}' -f $AppclusiveApiBaseUri, $coreEndpoint, 'CartItems';
-$cartItem = '{
-    "Id":  "0",
-    "Name":  "Shape",
-    "Description":  "Shape",
-	"CartId": "",
-	"CatalogueItemId" : "",
-	"Configuration": 
-		[
-			{"Id": "1", "Value":"1764.00"},
-			{"Id": "2", "Value":"42"}
-		]
-}';
-$cartItem = $cartItem | ConvertFrom-Json;
-$cartItem.CartId = "$cartId";
-$cartItem.CatalogueItemId = $shapeCatalogueItem.Id.ToString();
-$cartItem = $cartItem | ConvertTo-Json;
-
-$result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $cartItem;
-
-
-# Create Order
-$requestUri = '{0}/{1}/{2}/Create' -f $AppclusiveApiBaseUri, $coreEndpoint, 'Orders';
-
+# create Order
 $createOrderDto = @{};
-$createOrderDto.CartId = $cartId;
+$createOrderDto.CartId = $cart.Id;
 # DFTODO - adjust to tenant root item id (retrieved via TenantInformation)
 $createOrderDto.ParentItemId = "1";
-$createOrderDto = $createOrderDto | ConvertTo-Json;
-
-$result = Invoke-RestMethod -Method Post -Uri $requestUri -Headers $postHeaders -Body $createOrderDto;
+$orderJob = $Svc.Core.InvokeEntitySetActionWithSingleResult("Orders", "Create", [Net.Appclusive.Public.Domain.Control.Job], $createOrderDto);
 
 
 #
