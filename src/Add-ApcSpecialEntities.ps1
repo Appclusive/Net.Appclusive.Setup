@@ -781,10 +781,10 @@ catch
 # Insertion of system tenant builtin roles
 $builtInRoles = @{
 	1 = 'UberAdmin';
-	2 = 'CreatorOwner';
-	3 = 'Everyone';
-	4 = 'ParentTenant'
-	5 = 'ChildTenants'
+	2 = 'Everyone';
+	3 = 'ParentTenant'
+	4 = 'ChildTenants'
+	5 = 'CreatorOwner';
 	6 = 'TenantAdmin';
 	7 = 'TenantUser';
 	8 = 'TenantGuest';

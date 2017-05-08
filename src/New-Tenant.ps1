@@ -339,7 +339,7 @@ try {
 	Write-Host -ForegroundColor Green "Creating tenant administrator user SUCCEEDED.";
 
 	# create tenant builtIn roles
-	$builtInRoleNames = @('TenantAdmin', 'TenantUser', 'TenantGuest', 'TenantEveryone');
+	$builtInRoleNames = @('CreatorOwner', 'TenantAdmin', 'TenantUser', 'TenantGuest', 'TenantEveryone');
 	foreach ($builtInRoleName in $builtInRoleNames)
 	{
 		Write-Host ("START Creating {0} role ..." -f $builtInRoleName);
