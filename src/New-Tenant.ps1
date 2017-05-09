@@ -344,6 +344,10 @@ try {
 	{
 		Write-Host ("START Creating {0} role ..." -f $builtInRoleName);
 		$role = New-ApcRole -Name $builtInRoleName -Type Builtin -Svc $svc;
+		if ($builtInRoleName -eq 'TenantAdmin')
+		{
+			$tenantAdminRoleId = $role.Id;
+		}
 		# DFTODO - change createdById?
 		Write-Host -ForegroundColor Green ("Creating {0} role SUCCEEDED." -f $builtInRoleName);
 	}
@@ -366,7 +370,7 @@ try {
 	# create ACEs for tenant root ACL
 	Write-Host "START Creating ACE for TenantAdmin role ...";
 	$aceName = "{0} TenantAdmin ACE" -f $Name;
-	$ace = New-ApcAce -AclId $rootAcl.Id -Name $aceName -Type Allow -PermissionId 1 -RoleId $role.Id -Svc $svc;
+	$ace = New-ApcAce -AclId $rootAcl.Id -Name $aceName -Type Allow -PermissionId 1 -RoleId $tenantAdminRoleId -Svc $svc;
 	# DFTODO - change createdById?
 	Write-Host -ForegroundColor Green "Creating ACE for TenantAdmin role SUCCEEDED.";
 
