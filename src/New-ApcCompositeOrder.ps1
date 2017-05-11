@@ -16,11 +16,11 @@ PARAM
 
 # load Catalogue & CatalogueItem
 $filterQuery = "Name eq 'Example Catalogue'";
-$exampleCatalogue = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($Svc.Core.Catalogues, $filterQuery);
+$exampleCatalogue = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($Svc.Core.Catalogues, $filterQuery) | Select;
 Contract-Assert($exampleCatalogue);
 
 $filterQuery = "CatalogueId eq {0} and Name eq 'Rectangle'" -f $exampleCatalogue.Id;
-$rectangleCatalogueItem = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($Svc.Core.CatalogueItems, $filterQuery);
+$rectangleCatalogueItem = [Net.Appclusive.Api.DataServiceQueryExtensions]::Filter($Svc.Core.CatalogueItems, $filterQuery) | Select;
 Contract-Assert($rectangleCatalogueItem);
 
 
