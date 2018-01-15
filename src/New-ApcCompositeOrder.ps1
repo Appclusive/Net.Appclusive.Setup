@@ -1,4 +1,4 @@
-#Requires -Modules @{ ModuleName = 'Net.Appclusive.PS.Client'; ModuleVersion = "4.0.2" }
+#Requires -Modules @{ ModuleName = 'Net.Appclusive.PS.Client'; ModuleVersion = "4.0.2" }, @{ ModuleName = 'biz.dfch.PS.System.Logging'; ModuleVersion = '1.4.1' }
 
 [CmdletBinding(
     SupportsShouldProcess = $true
